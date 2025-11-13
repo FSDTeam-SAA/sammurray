@@ -23,16 +23,17 @@ const registerUser = async (payload: Partial<IUser>) => {
 };
 
 const loginUser = async (payload: Partial<IUser>) => {
-  const user = await User.findOne({ email: payload.email });
+  const user = await User.findOne({ email: payload.email }).select('+password');
+
   if (!user) throw new AppError(401, 'User not found');
   if (!payload.password) throw new AppError(400, 'Password is required');
+
 
   const isPasswordMatched = await bcrypt.compare(
     payload.password,
     user.password,
   );
   if (!isPasswordMatched) throw new AppError(401, 'Password not matched');
-  if (!user.verified) throw new AppError(403, 'Please verify your email first');
 
   const accessToken = jwtHelpers.genaretToken(
     { id: user._id, role: user.role, email: user.email },
@@ -124,11 +125,10 @@ const resetPassword = async (email: string, newPassword: string) => {
     config.jwt.refreshTokenExpires,
   );
 
-  const { password, ...userWithoutPassword } = user.toObject();
   return {
     accessToken,
     refreshToken,
-    user: userWithoutPassword,
+    user,
   };
 };
 
@@ -137,7 +137,10 @@ const changePassword = async (
   oldPassword: string,
   newPassword: string,
 ) => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select('+password');
+
+  console.log("User", user)
+
   if (!user) throw new AppError(404, 'User not found');
   const isPasswordMatched = await bcrypt.compare(oldPassword, user.password);
   if (!isPasswordMatched) throw new AppError(400, 'Password not matched');
