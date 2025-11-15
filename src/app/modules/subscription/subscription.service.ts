@@ -116,7 +116,7 @@ const paySubscription = async (userId: string, subscriptionId: string) => {
       {
         price_data: {
           currency: 'usd',
-          unit_amount: Math.round(subscription.amount * 100),
+          unit_amount: subscription.amount * 100,
           product_data: {
             name: subscription.name,
             description: subscription.discription || '',
@@ -133,6 +133,7 @@ const paySubscription = async (userId: string, subscriptionId: string) => {
     metadata: {
       userId: user.id,
       subscriptionId: subscription.id,
+      type: subscription.type || 'monthly',
     },
   });
 
@@ -147,7 +148,6 @@ const paySubscription = async (userId: string, subscriptionId: string) => {
 
   return { url: session.url, sessionId: session.id };
 };
-
 
 export const subscriptionService = {
   createSubscription,

@@ -14,6 +14,11 @@ const subscriptionSchema = new mongoose.Schema<ISubscription>(
       type: Number,
       required: true,
     },
+    type: {
+      type: String,
+      enum: ['monthly', 'yearly'],
+      required: true,
+    },
     user: [
       {
         type: mongoose.Schema.Types.ObjectId,
