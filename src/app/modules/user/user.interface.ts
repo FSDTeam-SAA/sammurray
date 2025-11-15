@@ -1,10 +1,10 @@
-import { userRole } from "./user.constant";
+import { userRole } from './user.constant';
 
 export interface IUser {
   fullName: string;
   email: string;
   password: string;
-  role: typeof userRole[keyof typeof userRole];
+  role: (typeof userRole)[keyof typeof userRole];
   profileImage?: string;
   agencyName?: string;
   location?: string;
@@ -16,5 +16,5 @@ export interface IUser {
   otpExpiry?: Date;
   verified?: boolean;
   stripeAccountId?: string;
+  isSubscription?: boolean;
 }
-
