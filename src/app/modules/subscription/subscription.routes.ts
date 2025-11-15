@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post(
   '/pay-subscription/:id',
-  auth(userRole.TENANT, userRole.SUPERVISOR),
+  auth(userRole.TENANT, userRole.SUPPLIER),
   subscriptionController.paySubscription,
 );
 

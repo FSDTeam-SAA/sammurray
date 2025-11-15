@@ -4,17 +4,16 @@ import sendResponse from '../../utils/sendResponse';
 import { authService } from './auth.service';
 
 const registerUser = catchAsync(async (req, res) => {
-  const { fullName, email, password } = req.body;
-  const result = await authService.registerUser({
-    fullName,
-    email,
-    password,
-  });
+  const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+  const body = req.body.data ? JSON.parse(req.body.data) : req.body;
+  const fileArray = files ? Object.values(files).flat() : undefined;
+
+  const result = await authService.registerUser(body, fileArray);
 
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: 'User registered successfully. Please verify your email.',
+    message: 'User registered successfully',
     data: result,
   });
 });

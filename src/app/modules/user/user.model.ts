@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema<IUser & Document>(
     password: { type: String, required: true, select: false },
     role: {
       type: String,
-      enum: [userRole.TENANT, userRole.SUPERVISOR, userRole.ADMIN],
+      enum: [userRole.TENANT, userRole.SUPPLIER, userRole.ADMIN],
       default: userRole.TENANT,
     },
     profileImage: { type: String },
