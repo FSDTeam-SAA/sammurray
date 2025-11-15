@@ -3,6 +3,7 @@ import config from '../config';
 import Stripe from 'stripe';
 import Payment from '../modules/payment/payment.model';
 import User from '../modules/user/user.model';
+import Subscription from '../modules/subscription/subscription.model';
 
 const stripe = new Stripe(config.stripe.secretKey!);
 
@@ -12,37 +13,47 @@ const stripeWebhookHandler = async (req: Request, res: Response) => {
   let event;
   try {
     event = stripe.webhooks.constructEvent(
-      req.body, 
+      req.body,
       sig,
-      config.stripe.webhookSecret!
+      config.stripe.webhookSecret!,
     );
   } catch (err: any) {
-    console.error("❌ Webhook Error:", err.message);
+    console.error('❌ Webhook Error:', err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  console.log("🔥 EVENT:", event.type);
+  console.log('🔥 EVENT:', event.type);
 
   try {
-    if (event.type === "checkout.session.completed") {
+    if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
 
       const payment = await Payment.findOne({ stripeSessionId: session.id });
       if (!payment) return res.json({ received: true });
 
-      payment.status = "completed";
+      payment.status = 'completed';
       payment.stripePaymentIntentId = session.payment_intent as string;
-
       await payment.save();
 
       const user = await User.findById(payment.user);
-      if (user) {
-        user.isSubscription = true;
-        await user.save();
-      }
+      if (!user) return res.json({ received: true });
+
+      const subscription = await Subscription.findById(payment.subscription);
+      if (!subscription) return res.json({ received: true });
+
+      // Add correct expiry
+      const monthsToAdd = subscription.type === 'yearly' ? 12 : 1;
+
+      const expiry = new Date();
+      expiry.setMonth(expiry.getMonth() + monthsToAdd);
+
+      user.isSubscription = true;
+      user.subscriptionExpiry = expiry;
+
+      await user.save();
     }
 
-    if (event.type === "payment_intent.payment_failed") {
+    if (event.type === 'payment_intent.payment_failed') {
       const intent = event.data.object as Stripe.PaymentIntent;
 
       const payment = await Payment.findOne({
@@ -50,17 +61,16 @@ const stripeWebhookHandler = async (req: Request, res: Response) => {
       });
 
       if (payment) {
-        payment.status = "failed";
+        payment.status = 'failed';
         await payment.save();
       }
     }
 
     return res.json({ received: true });
   } catch (err: any) {
-    console.error("❌ Handler Error:", err.message);
+    console.error('❌ Handler Error:', err.message);
     return res.status(500).send(`Webhook Handler Error: ${err.message}`);
   }
 };
-
 
 export default stripeWebhookHandler;

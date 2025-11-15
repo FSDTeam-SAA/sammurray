@@ -17,4 +17,5 @@ export interface IUser {
   verified?: boolean;
   stripeAccountId?: string;
   isSubscription?: boolean;
+  subscriptionExpiry?: Date;
 }

@@ -4,5 +4,6 @@ export interface ISubscription {
   name: string;
   discription?: string;
   amount: number;
+  type?: 'monthly' | 'yearly';
   user?: Types.ObjectId[];
 }
