@@ -9,16 +9,52 @@ import { jwtHelpers } from '../../helper/jwtHelpers';
 import sendMailer from '../../helper/sendMailer';
 import bcrypt from 'bcryptjs';
 import createOtpTemplate from '../../utils/createOtpTemplate';
+import { userRole } from '../user/user.constant';
+import { fileUploader } from '../../helper/fileUploder';
 
-const registerUser = async (payload: Partial<IUser>) => {
+const registerUser = async (
+  payload: Partial<IUser>,
+  files?: Express.Multer.File[],
+) => {
   const exist = await User.findOne({ email: payload.email });
   if (exist) throw new AppError(400, 'User already exists');
 
   const idx = Math.floor(Math.random() * 100);
   payload.profileImage = `https://avatar.iran.liara.run/public/${idx}.png`;
 
-  const user = await User.create(payload);
+  if (payload.role === userRole.SUPPLIER) {
+    if (
+      !payload.agencyName ||
+      !payload.location ||
+      !payload.phone ||
+      !payload.bio
+    ) {
+      throw new AppError(
+        400,
+        'Agency name, location, phone and bio are required for supplier registration',
+      );
+    }
 
+    if (!files || files.length < 2) {
+      throw new AppError(
+        400,
+        'Supplier must upload licenseImage and logoImage',
+      );
+    }
+
+    const uploadedFiles = await Promise.all(
+      files.map((f) => fileUploader.uploadToCloudinary(f)),
+    );
+
+    if (!uploadedFiles[0]?.secure_url || !uploadedFiles[1]?.secure_url) {
+      throw new AppError(400, 'File upload failed');
+    }
+
+    payload.licenseImage = uploadedFiles[0].secure_url;
+    payload.logoImage = uploadedFiles[1].secure_url;
+  }
+
+  const user = await User.create(payload);
   return user;
 };
 
@@ -27,7 +63,6 @@ const loginUser = async (payload: Partial<IUser>) => {
 
   if (!user) throw new AppError(401, 'User not found');
   if (!payload.password) throw new AppError(400, 'Password is required');
-
 
   const isPasswordMatched = await bcrypt.compare(
     payload.password,
@@ -76,7 +111,7 @@ const forgotPassword = async (email: string) => {
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   user.otp = otp;
-  user.otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+  user.otpExpiry = new Date(Date.now() + 20 * 60 * 1000); // 20 mins
   await user.save();
 
   await sendMailer(
@@ -138,9 +173,6 @@ const changePassword = async (
   newPassword: string,
 ) => {
   const user = await User.findById(userId).select('+password');
-
-  console.log("User", user)
-
   if (!user) throw new AppError(404, 'User not found');
   const isPasswordMatched = await bcrypt.compare(oldPassword, user.password);
   if (!isPasswordMatched) throw new AppError(400, 'Password not matched');
