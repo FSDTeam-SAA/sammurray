@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema<IUser & Document>(
     role: {
       type: String,
       enum: [userRole.TENANT, userRole.SUPERVISOR, userRole.ADMIN],
-      default: userRole.TENANT,              
+      default: userRole.TENANT,
     },
     profileImage: { type: String },
     agencyName: { type: String },
@@ -29,8 +29,9 @@ const userSchema = new mongoose.Schema<IUser & Document>(
     bio: { type: String },
     otp: { type: String },
     otpExpiry: { type: Date },
-    verified: { type: Boolean, default: false }, 
+    verified: { type: Boolean, default: false },
     stripeAccountId: { type: String },
+    isSubscription: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
