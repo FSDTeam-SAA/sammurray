@@ -6,29 +6,40 @@ import { fileUploader } from '../../helper/fileUploder';
 
 const router = express.Router();
 
+// Create/send a message
 router.post(
   '/',
   auth(userRole.SUPPLIER, userRole.TENANT),
   fileUploader.upload.single('file'),
-  messageController.createMessage,
+  messageController.createMessage
 );
 
+// Get all messages in a conversation (with pagination)
 router.get(
   '/:conversationId',
   auth(userRole.SUPPLIER, userRole.TENANT),
-  messageController.getMessages,
+  messageController.getMessages
 );
 
+// Mark messages as read
+router.patch(
+  '/mark-read',
+  auth(userRole.SUPPLIER, userRole.TENANT),
+  messageController.markMessagesAsRead
+);
+
+// Update a message
 router.put(
   '/:id',
   auth(userRole.SUPPLIER, userRole.TENANT),
-  messageController.updateMessage,
+  messageController.updateMessage
 );
 
+// Delete a message
 router.delete(
   '/:id',
   auth(userRole.SUPPLIER, userRole.TENANT),
-  messageController.deleteMessage,
+  messageController.deleteMessage
 );
 
 export const messageRoutes = router;

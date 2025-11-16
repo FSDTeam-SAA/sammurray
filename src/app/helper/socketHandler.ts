@@ -1,47 +1,89 @@
 import { Server, Socket } from 'socket.io';
-import Message from '../modules/message/message.model';
 
-const users: { userId: string; socketId: string }[] = [];
-
-const socketHandler = (io: Server) => {
-  io.on('connection', (socket: Socket) => {
-    console.log('User is connected: ', socket.id);
-
-    socket.on('addUser', (userId: string) => {
-      if (!users.find((u) => u.userId === userId)) {
-        users.push({ userId, socketId: socket.id });
-      }
-      io.emit('getUsers', users);
-    });
-
-    socket.on(
-      'sendMessage',
-      async ({ senderId, receiverId, conversationId, massage, file }) => {
-        const newMsg = await Message.create({
-          senderId,
-          receiverId,
-          conversationId,
-          massage,
-          file,
-        });
-
-        const receiver = users.find((u) => u.userId === receiverId);
-        if (receiver) {
-          io.to(receiver.socketId).emit('getMessage', newMsg);
-        }
-      },
-    );
-
-    socket.on('disconnect', () => {
-      console.log('User is disconnected: ', socket.id);
-      const index = users.findIndex((u) => u.socketId === socket.id);
-      if (index !== -1) {
-        users.splice(index, 1);
-      }
-
-      io.emit('getUsers', users);
-    });
-  });
+export const handleJoinUser = (socket: Socket, senderId: string) => {
+  const roomName = `user:${senderId}`;
+  socket.join(roomName);
+  socket.emit('connected');
+  console.log(`👤 User ${senderId} joined personal room: ${roomName}`);
 };
 
-export default socketHandler;
+
+
+
+export const handleJoinChat = (socket: Socket, data: any) => {
+  const { senderId, receiverId } = data;
+
+  if (!senderId || !receiverId) {
+    console.log('❌ Missing senderId or receiverId in join-chat');
+    return;
+  }
+
+  const chatRoomId = [senderId, receiverId].sort().join('-');
+  const roomName = `chat:${chatRoomId}`;
+
+  socket.join(roomName);
+  console.log(`💬 User ${senderId} joined chat room: ${roomName}`);
+
+  socket.emit('joined-chat', { chatRoomId });
+};
+
+
+
+
+export const handleLeaveChat = (socket: Socket, data: any) => {
+  const { senderId, receiverId } = data;
+
+  if (!senderId || !receiverId) return;
+
+  const chatRoomId = [senderId, receiverId].sort().join('-');
+  const roomName = `chat:${chatRoomId}`;
+
+  socket.leave(roomName);
+  console.log(`🚪 User ${senderId} left chat room: ${roomName}`);
+};
+
+
+
+
+export const handleSendMessage = (io: Server, socket: Socket, data: any) => {
+  try {
+    const { receiverId, senderId, message } = data;
+
+    if (!receiverId || !senderId || !message) {
+      socket.emit('error', { message: 'Missing required fields' });
+      return;
+    }
+
+    const chatRoomId = [senderId, receiverId].sort().join('-');
+    const roomName = `chat:${chatRoomId}`;
+
+    io.to(roomName).emit('receive-message', {
+      senderId,
+      receiverId,
+      message,
+    });
+
+    console.log(`✅ Message sent to room: ${roomName}`);
+  } catch (err) {
+    socket.emit('error', { message: `Failed to send message ${err}` });
+  }
+};
+
+
+
+
+// OPTIONAL TYPING EVENTS
+export const handleTyping = (socket: Socket, data: any) => {
+  const { senderId, receiverId } = data;
+  const room = `chat:${[senderId, receiverId].sort().join('-')}`;
+  socket.to(room).emit('typing', senderId);
+};
+
+
+
+
+export const handleStopTyping = (socket: Socket, data: any) => {
+  const { senderId, receiverId } = data;
+  const room = `chat:${[senderId, receiverId].sort().join('-')}`;
+  socket.to(room).emit('stop-typing', senderId);
+};

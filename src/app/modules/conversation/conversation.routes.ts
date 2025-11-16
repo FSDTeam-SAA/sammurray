@@ -9,21 +9,28 @@ const router = express.Router();
 router.post(
   '/',
   auth(userRole.SUPPLIER, userRole.TENANT),
-  conversationController.createConversation,
+  conversationController.createConversation
 );
 
 // Get all conversations of logged-in user
 router.get(
   '/',
   auth(userRole.SUPPLIER, userRole.TENANT),
-  conversationController.getAllConversations,
+  conversationController.getAllConversations
 );
 
-// Get single conversations of logged-in user
+// Get single conversation by ID
 router.get(
   '/:id',
   auth(userRole.SUPPLIER, userRole.TENANT),
-  conversationController.getConversationById,
+  conversationController.getConversationById
+);
+
+// Delete a conversation
+router.delete(
+  '/:id',
+  auth(userRole.SUPPLIER, userRole.TENANT),
+  conversationController.deleteConversation
 );
 
 export const conversationRoutes = router;
