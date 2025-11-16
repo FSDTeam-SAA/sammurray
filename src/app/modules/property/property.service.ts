@@ -1,6 +1,7 @@
 import AppError from '../../error/appError';
 import { fileUploader } from '../../helper/fileUploder';
 import pagination, { IOption } from '../../helper/pagenation';
+import PropertyType from '../propertyType/propertyType.model';
 import User from '../user/user.model';
 import { IProperty } from './property.interface';
 import Property from './property.model';
@@ -14,6 +15,10 @@ const createProperty = async (
   if (!user) {
     throw new AppError(404, 'User not found');
   }
+
+  const propertyType = await PropertyType.findById(payload.type);
+  if (!propertyType) throw new AppError(404, 'PropertyType not found');
+
   if (file) {
     const propertyImage = await fileUploader.uploadToCloudinary(file);
     payload.thumble = propertyImage.secure_url;

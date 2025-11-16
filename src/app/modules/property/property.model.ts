@@ -1,10 +1,13 @@
 import mongoose from 'mongoose';
 import { IProperty } from './property.interface';
 
-
 const porertySchema = new mongoose.Schema<IProperty>(
   {
-    type: { type: mongoose.Schema.Types.ObjectId, ref: 'PropertyType', required: true },
+    type: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PropertyType',
+      required: true,
+    },
     address: { type: String, required: true },
     size: { type: String, required: true },
     price: { type: Number, required: true },
@@ -20,6 +23,7 @@ const porertySchema = new mongoose.Schema<IProperty>(
       letatus: { type: String },
       languate: { type: String },
     },
+    bookingUser: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   },
   { timestamps: true },
 );
