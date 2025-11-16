@@ -17,4 +17,5 @@ export interface IProperty {
     letatus: string;
     languate: string;
   };
+  bookingUser?: Types.ObjectId[];
 }
