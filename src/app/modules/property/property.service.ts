@@ -1,5 +1,6 @@
 import AppError from '../../error/appError';
 import { fileUploader } from '../../helper/fileUploder';
+import pagination, { IOption } from '../../helper/pagenation';
 import User from '../user/user.model';
 import { IProperty } from './property.interface';
 import Property from './property.model';
@@ -25,6 +26,299 @@ const createProperty = async (
   return property;
 };
 
+const getAllProperties = async (
+  params: any,
+  options: IOption,
+  isSubscriptionActive: boolean,
+) => {
+  const { page, limit, skip, sortBy, sortOrder } = pagination(options);
+  const { searchTerm, ...filterData } = params;
+
+  const andCondition: any[] = [];
+  const searchableFields = [
+    'address',
+    'size',
+    'title',
+    'description',
+    'country',
+    'city',
+    'areaya',
+    'mounth',
+  ];
+
+  if (searchTerm) {
+    andCondition.push({
+      $or: [
+        ...searchableFields.map((field) => ({
+          [field]: { $regex: searchTerm, $options: 'i' },
+        })),
+        { 'type.name': { $regex: searchTerm, $options: 'i' } }, // ✅ search by PropertyType name
+      ],
+    });
+  }
+
+  if (Object.keys(filterData).length) {
+    andCondition.push({
+      $and: Object.entries(filterData).map(([field, value]) => ({
+        [field]: value,
+      })),
+    });
+  }
+
+  const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
+
+  let projection = {};
+
+  if (!isSubscriptionActive) {
+    projection = {
+      description: 0,
+      size: 0,
+      areaya: 0,
+      mounth: 0,
+      extaraLocation: 0,
+      createdAt: 0,
+      updatedAt: 0,
+      user: 0,
+      __v: 0,
+    };
+  }
+
+  const result = await Property.find(whereCondition)
+    .select(projection)
+    .skip(skip)
+    .limit(limit)
+    .sort({ [sortBy]: sortOrder } as any)
+    .populate('type');
+
+  const total = await Property.countDocuments(whereCondition);
+
+  return {
+    data: result,
+    meta: { total, page, limit },
+  };
+};
+
+const getSingleProperty = async (id: string, isSubscriptionActive: boolean) => {
+  let projection = {};
+
+  if (!isSubscriptionActive) {
+    projection = {
+      description: 0,
+      size: 0,
+      areaya: 0,
+      mounth: 0,
+      extaraLocation: 0,
+      createdAt: 0,
+      updatedAt: 0,
+      user: 0,
+      __v: 0,
+    };
+  }
+  const property = await Property.findById(id)
+    .select(projection)
+    .populate('user')
+    .populate('type');
+  if (!property) {
+    throw new AppError(404, 'Property not found');
+  }
+  return property;
+};
+
+const getAdminAllProperties = async (params: any, options: IOption) => {
+  const { page, limit, skip, sortBy, sortOrder } = pagination(options);
+  const { searchTerm, ...filterData } = params;
+
+  const andCondition: any[] = [];
+  const searchableFields = [
+    'address',
+    'size',
+    'title',
+    'description',
+    'country',
+    'city',
+    'areaya',
+    'mounth',
+  ];
+
+  if (searchTerm) {
+    andCondition.push({
+      $or: [
+        ...searchableFields.map((field) => ({
+          [field]: { $regex: searchTerm, $options: 'i' },
+        })),
+        { 'type.name': { $regex: searchTerm, $options: 'i' } }, // ✅ search by PropertyType name
+      ],
+    });
+  }
+
+  if (Object.keys(filterData).length) {
+    andCondition.push({
+      $and: Object.entries(filterData).map(([field, value]) => ({
+        [field]: value,
+      })),
+    });
+  }
+
+  const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
+
+  const result = await Property.find(whereCondition)
+    .skip(skip)
+    .limit(limit)
+    .sort({ [sortBy]: sortOrder } as any)
+    .populate('type');
+  if (!result) {
+    throw new AppError(404, 'Property not found');
+  }
+  const total = await Property.countDocuments(whereCondition);
+  return {
+    data: result,
+    meta: { total, page, limit },
+  };
+};
+
+const updateProperty = async (
+  id: string,
+  payload: Partial<IProperty>,
+  file?: Express.Multer.File,
+) => {
+  if (file) {
+    const propertyImage = await fileUploader.uploadToCloudinary(file);
+    payload.thumble = propertyImage.secure_url;
+  }
+  const property = await Property.findByIdAndUpdate(id, payload, { new: true });
+  if (!property) {
+    throw new AppError(404, 'Property not found');
+  }
+  return property;
+};
+
+const deleteProperty = async (id: string) => {
+  const property = await Property.findByIdAndDelete(id);
+  if (!property) {
+    throw new AppError(404, 'Property not found');
+  }
+  return property;
+};
+
+const updateMyProperty = async (
+  id: string,
+  userId: string,
+  payload: Partial<IProperty>,
+  file?: Express.Multer.File,
+) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(404, 'User not found');
+  }
+  if (file) {
+    const propertyImage = await fileUploader.uploadToCloudinary(file);
+    payload.thumble = propertyImage.secure_url;
+  }
+  const property = await Property.findOneAndUpdate(
+    { _id: id, user: userId },
+    payload,
+    { new: true },
+  );
+  if (!property) {
+    throw new AppError(404, 'Property not found');
+  }
+  return property;
+};
+
+const getMyAllProperties = async (
+  userId: string,
+  params: any,
+  options: IOption,
+) => {
+  const { page, limit, skip, sortBy, sortOrder } = pagination(options);
+  const { searchTerm, ...filterData } = params;
+
+  const andCondition: any[] = [];
+  const searchableFields = [
+    'address',
+    'size',
+    'title',
+    'description',
+    'country',
+    'city',
+    'areaya',
+    'mounth',
+  ];
+
+  if (searchTerm) {
+    andCondition.push({
+      $or: [
+        ...searchableFields.map((field) => ({
+          [field]: { $regex: searchTerm, $options: 'i' },
+        })),
+        { 'type.name': { $regex: searchTerm, $options: 'i' } }, // ✅ search by PropertyType name
+      ],
+    });
+  }
+
+  if (Object.keys(filterData).length) {
+    andCondition.push({
+      $and: Object.entries(filterData).map(([field, value]) => ({
+        [field]: value,
+      })),
+    });
+  }
+
+  const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(404, 'User not found');
+  }
+  const result = await Property.find({ ...whereCondition, user: userId })
+    .skip(skip)
+    .limit(limit)
+    .sort({ [sortBy]: sortOrder } as any)
+    .populate('type');
+  if (!result) {
+    throw new AppError(404, 'Property not found');
+  }
+  const total = await Property.countDocuments({
+    ...whereCondition,
+    user: userId,
+  });
+  return {
+    data: result,
+    meta: { total, page, limit },
+  };
+};
+
+const deleteMyProperty = async (id: string, userId: string) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(404, 'User not found');
+  }
+  const property = await Property.findOneAndDelete({ _id: id, user: userId });
+  if (!property) {
+    throw new AppError(404, 'Property not found');
+  }
+  return property;
+};
+
+const getAdminWonSingleProperty = async (id: string) => {
+  const property = await Property.findById(id);
+  if (!property) {
+    throw new AppError(404, 'Property not found');
+  }
+  return property;
+};
+
 export const propertyService = {
   createProperty,
+  getAllProperties,
+  getSingleProperty,
+
+  getAdminAllProperties,
+  updateProperty,
+  deleteProperty,
+
+  getAdminWonSingleProperty,
+
+  getMyAllProperties,
+  updateMyProperty,
+  deleteMyProperty,
 };

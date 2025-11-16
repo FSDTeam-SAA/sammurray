@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 
 export interface IProperty {
-  type: string;
+  type: Types.ObjectId;
   address: string;
   size: string;
   price: number;

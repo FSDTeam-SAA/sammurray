@@ -4,7 +4,7 @@ import { IProperty } from './property.interface';
 
 const porertySchema = new mongoose.Schema<IProperty>(
   {
-    type: { type: String, required: true },
+    type: { type: mongoose.Schema.Types.ObjectId, ref: 'PropertyType', required: true },
     address: { type: String, required: true },
     size: { type: String, required: true },
     price: { type: Number, required: true },
