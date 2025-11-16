@@ -1,11 +1,13 @@
 import mongoose from 'mongoose';
 import { IListing } from './listing.interface';
 
-
-
 const porertySchema = new mongoose.Schema<IListing>(
   {
-    type: { type: mongoose.Schema.Types.ObjectId, ref: 'PropertyType', required: true },
+    type: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'PropertyType',
+      required: true,
+    },
     address: { type: String, required: true },
     size: { type: String, required: true },
     price: { type: Number, required: true },
@@ -24,5 +26,5 @@ const porertySchema = new mongoose.Schema<IListing>(
   { timestamps: true },
 );
 
-const Property = mongoose.model<IListing>('Property', porertySchema);
-export default Property;
+const Listing = mongoose.model<IListing>('Listing', porertySchema);
+export default Listing;

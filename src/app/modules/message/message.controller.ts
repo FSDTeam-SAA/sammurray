@@ -27,31 +27,25 @@ const createMessage = catchAsync(async (req, res) => {
 
 const getMessages = catchAsync(async (req, res) => {
   const userId = req.user.id;
-  const conversationId = req.params.conversationId!;
-  const page = parseInt(req.query.page as string) || 1;
-  const limit = parseInt(req.query.limit as string) || 50;
-
+  const { conversationId } = req.params;
   const result = await messageService.getMessagesByConversation(
     userId,
-    conversationId,
-    page,
-    limit
+    conversationId!,
   );
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
     message: 'Messages retrieved successfully',
-    data: result.messages,
-    meta: result.pagination,
+    data: result,
   });
 });
 
 const updateMessage = catchAsync(async (req, res) => {
-  const id = req.params.id!;
+  const { id } = req.params;
   const userId = req.user.id;
 
-  const result = await messageService.updateMessage(userId, id, req.body);
+  const result = await messageService.updateMessage(userId, id!, req.body);
 
   sendResponse(res, {
     statusCode: 200,
@@ -62,29 +56,14 @@ const updateMessage = catchAsync(async (req, res) => {
 });
 
 const deleteMessage = catchAsync(async (req, res) => {
-  const id = req.params.id!;
+  const { id } = req.params;
   const userId = req.user.id;
-  
-  const result = await messageService.deleteMessage(userId, id);
+  await messageService.deleteMessage(userId, id!);
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: result.message,
-  });
-});
-
-const markMessagesAsRead = catchAsync(async (req, res) => {
-  const userId = req.user.id;
-  const { conversationId } = req.body;
-
-  const result = await messageService.markAsRead(userId, conversationId);
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: result.message,
-    data: { modifiedCount: result.modifiedCount },
+    message: 'Message deleted successfully',
   });
 });
 
@@ -93,5 +72,4 @@ export const messageController = {
   getMessages,
   updateMessage,
   deleteMessage,
-  markMessagesAsRead,
 };

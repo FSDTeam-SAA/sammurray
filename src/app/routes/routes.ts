@@ -6,6 +6,7 @@ import { propertyTypeRouter } from '../modules/propertyType/propertyType.routes'
 import { propertyRouter } from '../modules/property/property.routes';
 import { conversationRoutes } from '../modules/conversation/conversation.routes';
 import { messageRoutes } from '../modules/message/message.routes';
+import { listingRouter } from '../modules/listting/listing.routes';
 
 const router = Router();
 
@@ -41,6 +42,10 @@ const moduleRoutes = [
   {
     path: '/message',
     route: messageRoutes,
+  },
+  {
+    path: '/listing',
+    route: listingRouter,
   },
 ];
 
