@@ -4,6 +4,8 @@ import { authRoutes } from '../modules/auth/auth.routes';
 import { subscriptionRouter } from '../modules/subscription/subscription.routes';
 import { propertyTypeRouter } from '../modules/propertyType/propertyType.routes';
 import { propertyRouter } from '../modules/property/property.routes';
+import { conversationRoutes } from '../modules/conversation/conversation.routes';
+import { messageRoutes } from '../modules/message/message.routes';
 
 const router = Router();
 
@@ -27,6 +29,18 @@ const moduleRoutes = [
   {
     path: '/property',
     route: propertyRouter,
+  },
+  {
+    path: '/conversation',
+    route: conversationRoutes,
+  },
+  {
+    path: '/conversation',
+    route: conversationRoutes,
+  },
+  {
+    path: '/message',
+    route: messageRoutes,
   },
 ];
 
