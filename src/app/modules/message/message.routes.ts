@@ -8,26 +8,26 @@ const router = express.Router();
 
 router.post(
   '/',
-  auth(userRole.SUPPLIER, userRole.TENANT),
+  auth(userRole.TENANT, userRole.SUPPLIER),
   fileUploader.upload.single('file'),
   messageController.createMessage,
 );
 
 router.get(
   '/:conversationId',
-  auth(userRole.SUPPLIER, userRole.TENANT),
+  auth(userRole.TENANT, userRole.SUPPLIER),
   messageController.getMessages,
 );
 
 router.put(
   '/:id',
-  auth(userRole.SUPPLIER, userRole.TENANT),
+  auth(userRole.TENANT, userRole.SUPPLIER),
   messageController.updateMessage,
 );
 
 router.delete(
   '/:id',
-  auth(userRole.SUPPLIER, userRole.TENANT),
+  auth(userRole.TENANT, userRole.SUPPLIER),
   messageController.deleteMessage,
 );
 

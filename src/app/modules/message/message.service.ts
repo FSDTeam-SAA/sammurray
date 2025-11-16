@@ -11,8 +11,8 @@ const createMessage = async (userId: string, payload: IMessage) => {
 // Get all messages by conversation
 const getMessagesByConversation = async (userId: string, conversationId: string) => {
   const messages = await Message.find({ conversationId })
-    .populate('senderId', 'fullName profileImage')
-    .populate('receiverId', 'fullName profileImage');
+    .populate('senderId', 'firstName lastName profileImage')
+    .populate('receiverId', 'firstName lastName profileImage');
   return messages;
 };
 

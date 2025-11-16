@@ -27,10 +27,10 @@ const createMessage = catchAsync(async (req, res) => {
 
 const getMessages = catchAsync(async (req, res) => {
   const userId = req.user.id;
-  const conversationId = req.params.conversationId!;
+  const { conversationId } = req.params;
   const result = await messageService.getMessagesByConversation(
     userId,
-    conversationId,
+    conversationId!,
   );
 
   sendResponse(res, {
@@ -42,10 +42,10 @@ const getMessages = catchAsync(async (req, res) => {
 });
 
 const updateMessage = catchAsync(async (req, res) => {
-  const id = req.params.id!;
+  const { id } = req.params;
   const userId = req.user.id;
 
-  const result = await messageService.updateMessage(userId, id, req.body);
+  const result = await messageService.updateMessage(userId, id!, req.body);
 
   sendResponse(res, {
     statusCode: 200,
@@ -56,9 +56,9 @@ const updateMessage = catchAsync(async (req, res) => {
 });
 
 const deleteMessage = catchAsync(async (req, res) => {
-  const id = req.params.id!;
+  const { id } = req.params;
   const userId = req.user.id;
-  await messageService.deleteMessage(userId, id);
+  await messageService.deleteMessage(userId, id!);
 
   sendResponse(res, {
     statusCode: 200,

@@ -1,37 +1,38 @@
-import AppError from '../../error/appError';
 import Conversation from './conversation.model';
+import AppError from '../../error/appError';
+
 
 const createConversation = async (userId: string, receiverId: string) => {
-  if (userId === receiverId)
+  if (userId === receiverId) {
     throw new AppError(400, "You can't create a conversation with yourself");
+  }
 
+  // Check if conversation already exists
   const existing = await Conversation.findOne({
     members: { $all: [userId, receiverId] },
   });
 
-  if (existing) return existing;
+  if (existing) {
+    return existing;
+  }
 
   const conversation = await Conversation.create({
     members: [userId, receiverId],
   });
+
   return conversation;
 };
 
 const getAllConversations = async (userId: string) => {
-  const conversation = await Conversation.find({
+  // Return all conversations where current user is a member
+  const conversations = await Conversation.find({
     members: { $in: [userId] },
-  }).populate('members', 'fullName email profileImage role');
-  return conversation;
-};
+  }).populate('members', 'firstName lastName email profileImage role');
 
-const getConversationById = async (conversationId: string) => {
-  const conversation = await Conversation.findById(conversationId);
-  if(!conversation) throw new AppError(404, "Conversation not found")
-  return conversation;
+  return conversations;
 };
 
 export const conversationService = {
   createConversation,
   getAllConversations,
-  getConversationById
 };

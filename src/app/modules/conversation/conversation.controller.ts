@@ -6,10 +6,7 @@ const createConversation = catchAsync(async (req, res) => {
   const userId = req.user.id; // Logged-in user ID
   const { receiverId } = req.body; // The user to chat with
 
-  const result = await conversationService.createConversation(
-    userId,
-    receiverId,
-  );
+  const result = await conversationService.createConversation(userId, receiverId);
 
   sendResponse(res, {
     statusCode: 201,
@@ -31,20 +28,7 @@ const getAllConversations = catchAsync(async (req, res) => {
   });
 });
 
-const getConversationById = catchAsync(async (req, res) => {
-  const id = req.params.id!;
-  const result = await conversationService.getConversationById(id);
-
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: 'Conversation retrieved successfully',
-    data: result,
-  });
-});
-
 export const conversationController = {
   createConversation,
   getAllConversations,
-  getConversationById,
 };
