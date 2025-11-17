@@ -6,6 +6,9 @@ import { fileUploader } from '../../helper/fileUploder';
 import optionalAuth from '../../middlewares/optionalAuth';
 const router = express.Router();
 
+// map nearly
+router.get('/nearby', optionalAuth, propertyController.getNearbyProperties);
+
 // create property
 router.post(
   '/',
@@ -53,14 +56,12 @@ router.delete(
 // single property
 router.get(
   '/my/:id',
-  auth(userRole.ADMIN,userRole.SUPPLIER),
+  auth(userRole.ADMIN, userRole.SUPPLIER),
   propertyController.getAdminWonSingleProperty,
 );
-
 
 // all user access
 router.get('/', optionalAuth, propertyController.getAllProperties);
 router.get('/:id', optionalAuth, propertyController.getSingleProperty);
-
 
 export const propertyRouter = router;
