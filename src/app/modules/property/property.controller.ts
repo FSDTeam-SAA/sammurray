@@ -1,3 +1,4 @@
+import AppError from '../../error/appError';
 import pick from '../../helper/pick';
 import catchAsync from '../../utils/catchAsycn';
 import sendResponse from '../../utils/sendResponse';
@@ -158,9 +159,8 @@ const getMyAllProperties = catchAsync(async (req, res) => {
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
   if (filters.type) {
     const typeDoc = await PropertyType.findOne({ name: filters.type });
-    if (typeDoc)
-      filters.type = typeDoc._id.toString(); 
-    else delete filters.type; 
+    if (typeDoc) filters.type = typeDoc._id.toString();
+    else delete filters.type;
   }
   const userId = req.user.id;
   const result = await propertyService.getMyAllProperties(
@@ -206,6 +206,28 @@ const deleteMyProperty = catchAsync(async (req, res) => {
   });
 });
 
+// map
+const getNearbyProperties = catchAsync(async (req, res) => {
+  const { latitude, longitude, distance = 5 } = req.query;
+
+  if (!latitude || !longitude) {
+    throw new AppError(400, 'latitude and longitude are required');
+  }
+
+  const nearbyProperties = await propertyService.getNearbyProperties(
+    Number(latitude),
+    Number(longitude),
+    Number(distance),
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Nearby properties retrieved successfully',
+    data: nearbyProperties,
+  });
+});
+
 export const propertyController = {
   createProperty,
   getAllProperties,
@@ -220,4 +242,6 @@ export const propertyController = {
   getMyAllProperties,
   updateMyProperty,
   deleteMyProperty,
+
+  getNearbyProperties,
 };

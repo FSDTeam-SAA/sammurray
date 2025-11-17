@@ -312,6 +312,25 @@ const getAdminWonSingleProperty = async (id: string) => {
   return property;
 };
 
+// map
+
+export const getNearbyProperties = async (
+  latitude: number,
+  longitude: number,
+  distanceInKm: number,
+) => {
+  return Property.find({
+    extraLocation: {
+      $near: {
+        $geometry: { type: 'Point', coordinates: [longitude, latitude] },
+        $maxDistance: distanceInKm * 1000, // convert km to meters
+      },
+    },
+  });
+};
+
+
+
 export const propertyService = {
   createProperty,
   getAllProperties,
@@ -326,4 +345,6 @@ export const propertyService = {
   getMyAllProperties,
   updateMyProperty,
   deleteMyProperty,
+
+  getNearbyProperties,
 };
