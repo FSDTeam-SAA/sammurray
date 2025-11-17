@@ -8,6 +8,7 @@ import { conversationRoutes } from '../modules/conversation/conversation.routes'
 import { messageRoutes } from '../modules/message/message.routes';
 import { listingRouter } from '../modules/listting/listing.routes';
 import { bookingRouter } from '../modules/booking/booking.routes';
+import { dashboardRouter } from '../modules/dashboard/dashboard.routes';
 
 const router = Router();
 
@@ -51,6 +52,10 @@ const moduleRoutes = [
   {
     path: '/booking',
     route: bookingRouter,
+  },
+  {
+    path: '/dashboard',
+    route: dashboardRouter,
   },
 ];
 
