@@ -4,9 +4,9 @@ import { Server } from "socket.io";
 import { socketHandler } from "./app/helper/socket";
 import app from "./app";
 import http from "http";
+import Property from "./app/modules/property/property.model"; // Import করুন
 
 const PORT = config.port;
-
 
 const server = http.createServer(app);
 
@@ -24,9 +24,6 @@ io.on("connection", (socket) => {
   socketHandler(io, socket);
 });
 
-
-
-
 const main = async () => {
   try {
     if (!config.mongoUri) {
@@ -35,6 +32,13 @@ const main = async () => {
 
     const mongo = await mongoose.connect(config.mongoUri);
     console.log(`✅ MongoDB connected: ${mongo.connection.host}`);
+
+    try {
+      await Property.collection.createIndex({ extraLocation: "2dsphere" });
+      console.log("✅ Geospatial index created successfully");
+    } catch (indexError: any) {
+      console.error("❌ Error creating geospatial index:", indexError.message);
+    }
 
     // Start server
     server.listen(PORT, () => {
