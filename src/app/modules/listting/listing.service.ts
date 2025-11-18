@@ -69,7 +69,6 @@ const getAllListing = async (
       extaraLocation: 0,
       createdAt: 0,
       updatedAt: 0,
-      user: 0,
       __v: 0,
     };
   }
@@ -79,7 +78,7 @@ const getAllListing = async (
     .skip(skip)
     .limit(limit)
     .sort({ [sortBy]: sortOrder } as any)
-    .populate('type');
+    .populate('type').populate('user', 'fullName profileImage');
 
   const total = await Listing.countDocuments(whereCondition);
 
