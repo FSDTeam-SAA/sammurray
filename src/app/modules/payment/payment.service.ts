@@ -31,7 +31,8 @@ const getAllPayment = async (params: any, options: IOption) => {
     .skip(skip)
     .limit(limit)
     .sort({ [sortBy]: sortOrder } as any)
-    .populate('user', 'fullName email profileImage');
+    .populate('user', 'fullName email profileImage')
+    .populate('subscription');
   if (!result) {
     throw new AppError(404, 'payment not found');
   }
