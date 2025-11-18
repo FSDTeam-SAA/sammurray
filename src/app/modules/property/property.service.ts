@@ -314,22 +314,26 @@ const getAdminWonSingleProperty = async (id: string) => {
 
 // map
 
-export const getNearbyProperties = async (
+const getNearbyProperties = async (
   latitude: number,
   longitude: number,
   distanceInKm: number,
 ) => {
+  // MongoDB expects [longitude, latitude] order
   return Property.find({
     extraLocation: {
       $near: {
-        $geometry: { type: 'Point', coordinates: [longitude, latitude] },
-        $maxDistance: distanceInKm * 1000, // convert km to meters
+        $geometry: {
+          type: 'Point',
+          coordinates: [longitude, latitude], // [lng, lat]
+        },
+        $maxDistance: distanceInKm * 1000, // Convert km to meters
       },
     },
-  });
+  })
+    .populate('type')
+    .populate('user', 'fullName email profileImage');
 };
-
-
 
 export const propertyService = {
   createProperty,
