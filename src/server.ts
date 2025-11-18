@@ -4,7 +4,9 @@ import { Server } from "socket.io";
 import { socketHandler } from "./app/helper/socket";
 import app from "./app";
 import http from "http";
-import Property from "./app/modules/property/property.model"; // Import করুন
+import Property from "./app/modules/property/property.model";
+import '../src/app/helper/subscriptionCron';
+
 
 const PORT = config.port;
 

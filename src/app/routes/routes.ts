@@ -9,6 +9,7 @@ import { messageRoutes } from '../modules/message/message.routes';
 import { listingRouter } from '../modules/listting/listing.routes';
 import { bookingRouter } from '../modules/booking/booking.routes';
 import { dashboardRouter } from '../modules/dashboard/dashboard.routes';
+import { paymentRouter } from '../modules/payment/payment.routes';
 
 const router = Router();
 
@@ -56,6 +57,10 @@ const moduleRoutes = [
   {
     path: '/dashboard',
     route: dashboardRouter,
+  },
+  {
+    path: '/payment',
+    route: paymentRouter,
   },
 ];
 
