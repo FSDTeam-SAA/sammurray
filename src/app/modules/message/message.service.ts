@@ -18,8 +18,8 @@ const getMessagesByConversation = async (
   conversationId: string,
 ) => {
   const messages = await Message.find({ conversationId })
-    .populate('senderId', 'firstName lastName profileImage')
-    .populate('receiverId', 'firstName lastName profileImage');
+    .populate('senderId', 'fullName email profileImage')
+    .populate('receiverId', 'fullName email profileImage');
   return messages;
 };
 
