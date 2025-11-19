@@ -11,22 +11,16 @@ export const handleJoinUser = (socket: Socket, senderId: string) => {
 
 
 export const handleJoinChat = (socket: Socket, data: any) => {
-  const { senderId, receiverId } = data;
+  const { conversationId } = data;
 
-  if (!senderId || !receiverId) {
-    console.log('❌ Missing senderId or receiverId in join-chat');
-    return;
-  }
+  if (!conversationId) return;
 
-  const chatRoomId = [senderId, receiverId].sort().join('-');
-  const roomName = `chat:${chatRoomId}`;
-
+  const roomName = `chat:${conversationId}`;
   socket.join(roomName);
-  console.log(`💬 User ${senderId} joined chat room: ${roomName}`);
 
-  socket.emit('joined-chat', { chatRoomId });
+  console.log(`💬 Joined chat room: ${roomName}`);
+  socket.emit('joined-chat', { roomName });
 };
-
 
 
 
@@ -47,27 +41,28 @@ export const handleLeaveChat = (socket: Socket, data: any) => {
 
 export const handleSendMessage = (io: Server, socket: Socket, data: any) => {
   try {
-    const { receiverId, senderId, message } = data;
+    const { conversationId, senderId, receiverId, message } = data;
 
-    if (!receiverId || !senderId || !message) {
+    if (!conversationId || !senderId || !receiverId) {
       socket.emit('error', { message: 'Missing required fields' });
       return;
     }
 
-    const chatRoomId = [senderId, receiverId].sort().join('-');
-    const roomName = `chat:${chatRoomId}`;
+    const roomName = `chat:${conversationId}`;
 
     io.to(roomName).emit('receive-message', {
+      conversationId,
       senderId,
       receiverId,
       message,
     });
 
-    console.log(`✅ Message sent to room: ${roomName}`);
+    console.log(`📨 Message send to room: ${roomName}`);
   } catch (err) {
     socket.emit('error', { message: `Failed to send message ${err}` });
   }
 };
+
 
 
 
