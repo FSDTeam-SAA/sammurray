@@ -16,12 +16,12 @@ router.post(
 
 router.get(
   '/profile',
-  auth(userRole.ADMIN, userRole.TENANT, userRole.SUPERVISOR),
+  auth(userRole.ADMIN, userRole.TENANT, userRole.SUPPLIER),
   userController.profile,
 );
 router.put(
   '/profile',
-  auth(userRole.ADMIN, userRole.TENANT, userRole.SUPERVISOR),
+  auth(userRole.ADMIN, userRole.TENANT, userRole.SUPPLIER),
   fileUploader.upload.single('profileImage'),
   userController.updateUserById,
 );
