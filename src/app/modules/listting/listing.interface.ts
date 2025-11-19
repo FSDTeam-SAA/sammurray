@@ -12,8 +12,8 @@ export interface IListing {
   city: string;
   areaya?: string;
   mounth?: string;
-  extaraLocation?: {
-    letatus: string;
-    languate: string;
+  extraLocation?: {
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
   };
 }

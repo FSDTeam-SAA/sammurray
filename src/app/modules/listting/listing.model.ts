@@ -18,9 +18,9 @@ const porertySchema = new mongoose.Schema<IListing>(
     city: { type: String, required: true },
     areaya: { type: String },
     mounth: { type: String },
-    extaraLocation: {
-      letatus: { type: String },
-      languate: { type: String },
+    extraLocation: {
+      type: { type: String, enum: ['Point'], default: 'Point' },
+      coordinates: { type: [Number], required: true }, // [lng, lat]
     },
   },
   { timestamps: true },
