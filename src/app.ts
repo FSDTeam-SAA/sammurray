@@ -8,7 +8,7 @@ import stripeWebhookHandler from './app/helper/stripeWebhookHandler';
 const app = express();
 
 // Middlewares
-app.use(cors({ origin: '*', credentials: true }));
+app.use(cors({ origin: '*',  credentials: true }));
 app.use(cookieParser());
 app.post(
   '/webhook',
