@@ -1,3 +1,4 @@
+import AppError from '../../error/appError';
 import { fileUploader } from '../../helper/fileUploder';
 import catchAsync from '../../utils/catchAsycn';
 import sendResponse from '../../utils/sendResponse';
@@ -5,22 +6,28 @@ import { messageService } from './message.service';
 
 const createMessage = catchAsync(async (req, res) => {
   const userId = req.user.id;
+  const { conversationId, receiverId, message } = req.body;
 
-  let fileUrl: string | undefined;
+  if (!conversationId) throw new AppError(400, 'conversationId is required');
+
+  let fileUrl;
   if (req.file) {
     const uploaded = await fileUploader.uploadToCloudinary(req.file);
     fileUrl = uploaded.secure_url;
   }
 
   const result = await messageService.createMessage(userId, {
-    ...req.body,
+    senderId: userId,
+    conversationId,
+    receiverId,
+    message,
     file: fileUrl,
-  });
+  } as any);
 
   sendResponse(res, {
     statusCode: 201,
     success: true,
-    message: 'Message sent successfully',
+    message: 'Message sent',
     data: result,
   });
 });
