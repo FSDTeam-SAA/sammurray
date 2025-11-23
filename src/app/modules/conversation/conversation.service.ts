@@ -27,7 +27,7 @@ const getAllConversations = async (userId: string) => {
   // Return all conversations where current user is a member
   const conversations = await Conversation.find({
     members: { $in: [userId] },
-  }).populate('members', 'firstName lastName email profileImage role');
+  }).populate('members', 'fullName email profileImage role');
 
   return conversations;
 };

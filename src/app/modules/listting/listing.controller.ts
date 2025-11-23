@@ -93,8 +93,7 @@ const getAllListtings = catchAsync(async (req, res) => {
     new Date(req.user.subscriptionExpiry) > new Date();
 
   // Check if subscription system itself is active
-  const subscriptionSystemActive =
-    (await Subscription.countDocuments({ status: 'active' })) > 0;
+  const subscriptionSystemActive = (await Subscription.countDocuments({ status: 'active' })) > 0;
 
   const result = await listingService.getAllListing(
     filters,
@@ -111,6 +110,9 @@ const getAllListtings = catchAsync(async (req, res) => {
     data: result.data,
   });
 });
+
+
+
 
 const getSingleListting = catchAsync(async (req, res) => {
   const isSubscriptionActive =
@@ -197,6 +199,7 @@ const getAdminWonSingleListting = catchAsync(async (req, res) => {
 const getMyAllListtings = catchAsync(async (req, res) => {
   const filters = pick(req.query, [
     'searchTerm',
+    
     'type',
     'address',
     'size',
