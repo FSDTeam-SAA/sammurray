@@ -1,5 +1,7 @@
 import AppError from '../../error/appError';
 import pagination, { IOption } from '../../helper/pagenation';
+import Subscription from '../subscription/subscription.model';
+import { IUser } from '../user/user.interface';
 import User from '../user/user.model';
 import { IListing } from './listing.interface';
 import Listing from './listing.model';
@@ -17,10 +19,83 @@ const createListing = async (userId: string, payload: IListing) => {
   return property;
 };
 
+// const getAllListing = async (
+//   params: any,
+//   options: IOption,
+//   isSubscriptionActive: boolean,
+// ) => {
+//   const { page, limit, skip, sortBy, sortOrder } = pagination(options);
+//   const { searchTerm, ...filterData } = params;
+
+//   const andCondition: any[] = [];
+//   const searchableFields = [
+//     'address',
+//     'size',
+//     'title',
+//     'description',
+//     'country',
+//     'city',
+//     'areaya',
+//     'mounth',
+//   ];
+
+//   if (searchTerm) {
+//     andCondition.push({
+//       $or: [
+//         ...searchableFields.map((field) => ({
+//           [field]: { $regex: searchTerm, $options: 'i' },
+//         })),
+//         { 'type.name': { $regex: searchTerm, $options: 'i' } }, // ✅ search by PropertyType name
+//       ],
+//     });
+//   }
+
+//   if (Object.keys(filterData).length) {
+//     andCondition.push({
+//       $and: Object.entries(filterData).map(([field, value]) => ({
+//         [field]: value,
+//       })),
+//     });
+//   }
+
+//   const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
+
+//   let projection = {};
+
+//   if (!isSubscriptionActive) {
+//     projection = {
+//       description: 0,
+//       size: 0,
+//       areaya: 0,
+//       mounth: 0,
+//       extaraLocation: 0,
+//       createdAt: 0,
+//       updatedAt: 0,
+//       user: 0,
+//       __v: 0,
+//     };
+//   }
+
+//   const result = await Listing.find(whereCondition)
+//     .select(projection)
+//     .skip(skip)
+//     .limit(limit)
+//     .sort({ [sortBy]: sortOrder } as any)
+//     .populate('type');
+
+//   const total = await Listing.countDocuments(whereCondition);
+
+//   return {
+//     data: result,
+//     meta: { total, page, limit },
+//   };
+// };
+
 const getAllListing = async (
   params: any,
   options: IOption,
-  isSubscriptionActive: boolean,
+  isSubscriptionActive: boolean, // user's subscription status
+  subscriptionSystemActive: boolean // whether subscription system is active
 ) => {
   const { page, limit, skip, sortBy, sortOrder } = pagination(options);
   const { searchTerm, ...filterData } = params;
@@ -37,17 +112,19 @@ const getAllListing = async (
     'mounth',
   ];
 
+  // Search
   if (searchTerm) {
     andCondition.push({
       $or: [
         ...searchableFields.map((field) => ({
           [field]: { $regex: searchTerm, $options: 'i' },
         })),
-        { 'type.name': { $regex: searchTerm, $options: 'i' } }, // ✅ search by PropertyType name
+        { 'type.name': { $regex: searchTerm, $options: 'i' } },
       ],
     });
   }
 
+  // Filters
   if (Object.keys(filterData).length) {
     andCondition.push({
       $and: Object.entries(filterData).map(([field, value]) => ({
@@ -58,20 +135,27 @@ const getAllListing = async (
 
   const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
 
+  // Determine projection based on rules
   let projection = {};
-
-  if (!isSubscriptionActive) {
-    projection = {
-      description: 0,
-      size: 0,
-      areaya: 0,
-      mounth: 0,
-      extaraLocation: 0,
-      createdAt: 0,
-      updatedAt: 0,
-      user: 0,
-      __v: 0,
-    };
+  if (subscriptionSystemActive) {
+    if (!isSubscriptionActive) {
+      // subscription system is active, but user has no subscription → limited data
+      projection = {
+        description: 0,
+        size: 0,
+        areaya: 0,
+        mounth: 0,
+        extaraLocation: 0,
+        createdAt: 0,
+        updatedAt: 0,
+        user: 0,
+        __v: 0,
+      };
+    }
+    // if user has active subscription → no projection (show all data)
+  } else {
+    // subscription system inactive → show all data
+    projection = {};
   }
 
   const result = await Listing.find(whereCondition)
@@ -88,6 +172,7 @@ const getAllListing = async (
     meta: { total, page, limit },
   };
 };
+
 
 const getSingleListting = async (id: string, isSubscriptionActive: boolean) => {
   let projection = {};

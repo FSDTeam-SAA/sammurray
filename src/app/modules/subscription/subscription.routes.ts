@@ -17,6 +17,11 @@ router.post(
 );
 
 router.get('/', subscriptionController.getAllSubscription);
+router.put(
+  '/status/:id',
+  auth(userRole.ADMIN),
+  subscriptionController.updateSubscriptionStatus,
+);
 router.get('/:id', subscriptionController.singleSubscription);
 router.put(
   '/:id',

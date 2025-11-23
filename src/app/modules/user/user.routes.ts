@@ -16,17 +16,30 @@ router.post(
 
 router.get(
   '/profile',
-  auth(userRole.ADMIN, userRole.TENANT, userRole.SUPERVISOR),
+  auth(userRole.ADMIN, userRole.TENANT, userRole.SUPPLIER, userRole.AGENT),
   userController.profile,
 );
 router.put(
   '/profile',
-  auth(userRole.ADMIN, userRole.TENANT, userRole.SUPERVISOR),
+  auth(userRole.ADMIN, userRole.TENANT, userRole.SUPPLIER, userRole.AGENT),
   fileUploader.upload.single('profileImage'),
   userController.updateUserById,
 );
 
-router.get('/all-user', auth(userRole.ADMIN), userController.getAllUser);
+router.get('/all-user', userController.getAllUser);
+
+router.put(
+  '/approved-agent/:id',
+  auth(userRole.ADMIN),
+  userController.approvedAgent,
+);
+
+router.put(
+  '/reject-agent/:id',
+  auth(userRole.ADMIN),
+  userController.rejectAgent,
+);
+
 router.get('/:id', auth(userRole.ADMIN), userController.getUserById);
 
 router.delete('/:id', auth(userRole.ADMIN), userController.deleteUserById);

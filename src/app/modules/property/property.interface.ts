@@ -13,9 +13,9 @@ export interface IProperty {
   city: string;
   areaya?: string;
   mounth?: string;
-  extaraLocation?: {
-    letatus: string;
-    languate: string;
+  extraLocation?: {
+    type: 'Point';
+    coordinates: [number, number]; // [longitude, latitude]
   };
   bookingUser?: Types.ObjectId[];
 }

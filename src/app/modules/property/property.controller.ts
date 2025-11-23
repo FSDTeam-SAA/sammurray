@@ -1,3 +1,4 @@
+import AppError from '../../error/appError';
 import pick from '../../helper/pick';
 import catchAsync from '../../utils/catchAsycn';
 import sendResponse from '../../utils/sendResponse';
@@ -158,9 +159,8 @@ const getMyAllProperties = catchAsync(async (req, res) => {
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
   if (filters.type) {
     const typeDoc = await PropertyType.findOne({ name: filters.type });
-    if (typeDoc)
-      filters.type = typeDoc._id.toString(); 
-    else delete filters.type; 
+    if (typeDoc) filters.type = typeDoc._id.toString();
+    else delete filters.type;
   }
   const userId = req.user.id;
   const result = await propertyService.getMyAllProperties(
@@ -206,6 +206,46 @@ const deleteMyProperty = catchAsync(async (req, res) => {
   });
 });
 
+// map
+const getNearbyProperties = catchAsync(async (req, res) => {
+  const { latitude, longitude, distance = 5 } = req.query;
+
+  // Validate required parameters
+  if (!latitude || !longitude) {
+    throw new AppError(400, 'latitude and longitude are required');
+  }
+
+  const lat = Number(latitude);
+  const lng = Number(longitude);
+  const dist = Number(distance);
+
+  // Validate numeric values
+  if (isNaN(lat) || isNaN(lng) || isNaN(dist)) {
+    throw new AppError(400, 'Invalid latitude, longitude, or distance value');
+  }
+
+  // Validate coordinate ranges
+  if (lat < -90 || lat > 90) {
+    throw new AppError(400, 'Latitude must be between -90 and 90');
+  }
+  if (lng < -180 || lng > 180) {
+    throw new AppError(400, 'Longitude must be between -180 and 180');
+  }
+
+  const nearbyProperties = await propertyService.getNearbyProperties(
+    lat,
+    lng,
+    dist,
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Nearby properties retrieved successfully',
+    data: nearbyProperties,
+  });
+});
+
 export const propertyController = {
   createProperty,
   getAllProperties,
@@ -220,4 +260,6 @@ export const propertyController = {
   getMyAllProperties,
   updateMyProperty,
   deleteMyProperty,
+
+  getNearbyProperties,
 };

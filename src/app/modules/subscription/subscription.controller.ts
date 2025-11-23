@@ -71,6 +71,18 @@ const paySubscription = catchAsync(async (req, res) => {
   });
 });
 
+const updateSubscriptionStatus = catchAsync(async (req, res) => {
+  const result = await subscriptionService.updateSubscriptionStatus(
+    req.params.id!,
+  );
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Subscription status updated successfully',
+    data: result,
+  });
+});
+
 export const subscriptionController = {
   createSubscription,
   getAllSubscription,
@@ -78,4 +90,5 @@ export const subscriptionController = {
   updateSubscription,
   deleteSubscription,
   paySubscription,
+  updateSubscriptionStatus,
 };

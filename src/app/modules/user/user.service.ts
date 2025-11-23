@@ -1,6 +1,8 @@
 import AppError from '../../error/appError';
 import { fileUploader } from '../../helper/fileUploder';
 import pagination, { IOption } from '../../helper/pagenation';
+import HireAgent from '../hireAgent/hireAgent.model';
+import { userRole } from './user.constant';
 
 import { IUser } from './user.interface';
 import User from './user.model';
@@ -34,6 +36,12 @@ const getAllUser = async (params: any, options: IOption) => {
         [field]: value,
       })),
     });
+  }
+
+  if (filterData.agentApproved === 'true') {
+    andCondition.push({ agentApproved: true });
+  } else if (filterData.agentApproved === 'false') {
+    andCondition.push({ agentApproved: false });
   }
 
   const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
@@ -103,6 +111,40 @@ const profile = async (id: string) => {
   if (!result) {
     throw new AppError(404, 'User not found');
   }
+  if (result.role === userRole.SUPPLIER) {
+    const agent = await HireAgent.find({ supplierId: id }).populate('agentId');
+    return { result, agent };
+  }
+  if (result.role === userRole.AGENT) {
+    const supplier = await HireAgent.find({ agentId: id }).populate(
+      'supplierId',
+    );
+    return { result, supplier };
+  }
+  return result;
+};
+
+const approvedAgent = async (id: string) => {
+  const result = await User.findByIdAndUpdate(
+    id,
+    { agentApproved: true },
+    { new: true },
+  );
+  if (!result) {
+    throw new AppError(404, 'User not found');
+  }
+  return result;
+};
+
+const rejectAgent = async (id: string) => {
+  const result = await User.findByIdAndUpdate(
+    id,
+    { agentApproved: false },
+    { new: true },
+  );
+  if (!result) {
+    throw new AppError(404, 'User not found');
+  }
   return result;
 };
 
@@ -113,4 +155,6 @@ export const userService = {
   updateUserById,
   deleteUserById,
   profile,
+  approvedAgent,
+  rejectAgent,
 };

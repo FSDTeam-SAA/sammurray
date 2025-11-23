@@ -83,7 +83,7 @@ const getAllProperties = async (
       extaraLocation: 0,
       createdAt: 0,
       updatedAt: 0,
-      user: 0,
+
       __v: 0,
     };
   }
@@ -312,6 +312,29 @@ const getAdminWonSingleProperty = async (id: string) => {
   return property;
 };
 
+// map
+
+const getNearbyProperties = async (
+  latitude: number,
+  longitude: number,
+  distanceInKm: number,
+) => {
+  // MongoDB expects [longitude, latitude] order
+  return Property.find({
+    extraLocation: {
+      $near: {
+        $geometry: {
+          type: 'Point',
+          coordinates: [longitude, latitude], // [lng, lat]
+        },
+        $maxDistance: distanceInKm * 1000, // Convert km to meters
+      },
+    },
+  })
+    .populate('type')
+    .populate('user', 'fullName email profileImage');
+};
+
 export const propertyService = {
   createProperty,
   getAllProperties,
@@ -326,4 +349,6 @@ export const propertyService = {
   getMyAllProperties,
   updateMyProperty,
   deleteMyProperty,
+
+  getNearbyProperties,
 };

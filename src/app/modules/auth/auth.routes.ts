@@ -11,9 +11,12 @@ router.post(
   fileUploader.upload.fields([
     { name: 'licenseImage', maxCount: 1 },
     { name: 'logoImage', maxCount: 1 },
+    { name: 'agencyLogo', maxCount: 1 },
+    { name: 'license', maxCount: 1 },
   ]),
   authController.registerUser,
 );
+
 router.post('/login', authController.loginUser);
 router.post('/refresh-token', authController.refreshToken);
 router.post('/forgot-password', authController.forgotPassword);

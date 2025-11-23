@@ -14,7 +14,7 @@ const createUser = catchAsync(async (req, res) => {
 });
 
 const getAllUser = catchAsync(async (req, res) => {
-  const filters = pick(req.query, ['searchTerm', 'role', 'name', 'email']);
+  const filters = pick(req.query, ['searchTerm', 'role', 'name', 'email','agentApproved']);
   const options = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder']);
   const result = await userService.getAllUser(filters, options);
   sendResponse(res, {
@@ -76,6 +76,34 @@ const profile = catchAsync(async (req, res) => {
   });
 });
 
+const approvedAgent = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new Error('User ID is required');
+  }
+  const result = await userService.approvedAgent(id);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User approved successfully',
+    data: result,
+  });
+});
+
+const rejectAgent = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  if (!id) {
+    throw new Error('User ID is required');
+  }
+  const result = await userService.rejectAgent(id);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'User rejected successfully',
+    data: result,
+  });
+});
+
 export const userController = {
   createUser,
   getAllUser,
@@ -83,4 +111,6 @@ export const userController = {
   updateUserById,
   deleteUserById,
   profile,
+  approvedAgent,
+  rejectAgent,
 };
