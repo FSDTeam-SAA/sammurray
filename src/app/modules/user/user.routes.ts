@@ -26,7 +26,7 @@ router.put(
   userController.updateUserById,
 );
 
-router.get('/all-user', auth(userRole.ADMIN), userController.getAllUser);
+router.get('/all-user', userController.getAllUser);
 
 router.put(
   '/approved-agent/:id',
@@ -39,7 +39,6 @@ router.put(
   auth(userRole.ADMIN),
   userController.rejectAgent,
 );
-
 
 router.get('/:id', auth(userRole.ADMIN), userController.getUserById);
 

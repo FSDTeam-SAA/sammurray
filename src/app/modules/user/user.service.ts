@@ -36,6 +36,12 @@ const getAllUser = async (params: any, options: IOption) => {
     });
   }
 
+  if (filterData.agentApproved === 'true') {
+    andCondition.push({ agentApproved: true });
+  } else if (filterData.agentApproved === 'false') {
+    andCondition.push({ agentApproved: false });
+  }
+
   const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
 
   const result = await User.find(whereCondition)
