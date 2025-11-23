@@ -6,6 +6,104 @@ import User from '../user/user.model';
 import { IProperty } from './property.interface';
 import Property from './property.model';
 
+// const getAllProperties = async (
+//   params: any,
+//   options: IOption,
+//   isSubscriptionActive: boolean,
+// ) => {
+//   const { page, limit, skip, sortBy, sortOrder } = pagination(options);
+//   const { searchTerm, ...filterData } = params;
+
+//   const andCondition: any[] = [];
+//   const searchableFields = [
+//     'address',
+//     'size',
+//     'title',
+//     'description',
+//     'country',
+//     'city',
+//     'areaya',
+//     'mounth',
+//   ];
+
+//   if (searchTerm) {
+//     andCondition.push({
+//       $or: [
+//         ...searchableFields.map((field) => ({
+//           [field]: { $regex: searchTerm, $options: 'i' },
+//         })),
+//         { 'type.name': { $regex: searchTerm, $options: 'i' } }, // ✅ search by PropertyType name
+//       ],
+//     });
+//   }
+
+//   if (Object.keys(filterData).length) {
+//     andCondition.push({
+//       $and: Object.entries(filterData).map(([field, value]) => ({
+//         [field]: value,
+//       })),
+//     });
+//   }
+
+//   const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
+
+//   let projection = {};
+
+//   if (!isSubscriptionActive) {
+//     projection = {
+//       description: 0,
+//       size: 0,
+//       areaya: 0,
+//       mounth: 0,
+//       extaraLocation: 0,
+//       createdAt: 0,
+//       updatedAt: 0,
+
+//       __v: 0,
+//     };
+//   }
+
+//   const result = await Property.find(whereCondition)
+//     .select(projection)
+//     .skip(skip)
+//     .limit(limit)
+//     .sort({ [sortBy]: sortOrder } as any)
+//     .populate('type');
+
+//   const total = await Property.countDocuments(whereCondition);
+
+//   return {
+//     data: result,
+//     meta: { total, page, limit },
+//   };
+// };
+
+// const getSingleProperty = async (id: string, isSubscriptionActive: boolean) => {
+//   let projection = {};
+
+//   if (!isSubscriptionActive) {
+//     projection = {
+//       description: 0,
+//       size: 0,
+//       areaya: 0,
+//       mounth: 0,
+//       extaraLocation: 0,
+//       createdAt: 0,
+//       updatedAt: 0,
+//       user: 0,
+//       __v: 0,
+//     };
+//   }
+//   const property = await Property.findById(id)
+//     .select(projection)
+//     .populate('user')
+//     .populate('type');
+//   if (!property) {
+//     throw new AppError(404, 'Property not found');
+//   }
+//   return property;
+// };
+
 const createProperty = async (
   userId: string,
   payload: IProperty,
@@ -35,6 +133,7 @@ const getAllProperties = async (
   params: any,
   options: IOption,
   isSubscriptionActive: boolean,
+  subscriptionSystemActive: boolean,
 ) => {
   const { page, limit, skip, sortBy, sortOrder } = pagination(options);
   const { searchTerm, ...filterData } = params;
@@ -73,19 +172,22 @@ const getAllProperties = async (
   const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
 
   let projection = {};
+  if (subscriptionSystemActive) {
+    if (!isSubscriptionActive) {
+      projection = {
+        description: 0,
+        size: 0,
+        areaya: 0,
+        mounth: 0,
+        extaraLocation: 0,
+        createdAt: 0,
+        updatedAt: 0,
 
-  if (!isSubscriptionActive) {
-    projection = {
-      description: 0,
-      size: 0,
-      areaya: 0,
-      mounth: 0,
-      extaraLocation: 0,
-      createdAt: 0,
-      updatedAt: 0,
-
-      __v: 0,
-    };
+        __v: 0,
+      };
+    }
+  } else {
+    projection = {};
   }
 
   const result = await Property.find(whereCondition)
@@ -103,21 +205,28 @@ const getAllProperties = async (
   };
 };
 
-const getSingleProperty = async (id: string, isSubscriptionActive: boolean) => {
+const getSingleProperty = async (
+  id: string,
+  isSubscriptionActive: boolean,
+  subscriptionSystemActive: boolean,
+) => {
   let projection = {};
+  if (subscriptionSystemActive) {
+    if (!isSubscriptionActive) {
+      projection = {
+        description: 0,
+        size: 0,
+        areaya: 0,
+        mounth: 0,
+        extaraLocation: 0,
+        createdAt: 0,
+        updatedAt: 0,
 
-  if (!isSubscriptionActive) {
-    projection = {
-      description: 0,
-      size: 0,
-      areaya: 0,
-      mounth: 0,
-      extaraLocation: 0,
-      createdAt: 0,
-      updatedAt: 0,
-      user: 0,
-      __v: 0,
-    };
+        __v: 0,
+      };
+    }
+  } else {
+    projection = {};
   }
   const property = await Property.findById(id)
     .select(projection)

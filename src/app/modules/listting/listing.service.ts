@@ -1,23 +1,10 @@
 import AppError from '../../error/appError';
 import pagination, { IOption } from '../../helper/pagenation';
-import Subscription from '../subscription/subscription.model';
-import { IUser } from '../user/user.interface';
 import User from '../user/user.model';
 import { IListing } from './listing.interface';
 import Listing from './listing.model';
 
-const createListing = async (userId: string, payload: IListing) => {
-  const user = await User.findById(userId);
-  if (!user) {
-    throw new AppError(404, 'User not found');
-  }
 
-  const property = await Listing.create({ ...payload, user: user._id });
-  if (!property) {
-    throw new AppError(400, 'Listing not created');
-  }
-  return property;
-};
 
 // const getAllListing = async (
 //   params: any,
@@ -91,11 +78,54 @@ const createListing = async (userId: string, payload: IListing) => {
 //   };
 // };
 
+
+// const getSingleListting = async (id: string, isSubscriptionActive: boolean) => {
+//   let projection = {};
+
+//   if (!isSubscriptionActive) {
+//     projection = {
+//       description: 0,
+//       size: 0,
+//       areaya: 0,
+//       mounth: 0,
+//       extaraLocation: 0,
+//       createdAt: 0,
+//       updatedAt: 0,
+//       user: 0,
+//       __v: 0,
+//     };
+//   }
+//   const property = await Listing.findById(id)
+//     .select(projection)
+//     .populate('user')
+//     .populate('type');
+//   if (!property) {
+//     throw new AppError(404, 'Property not found');
+//   }
+//   return property;
+// };
+
+
+
+
+const createListing = async (userId: string, payload: IListing) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError(404, 'User not found');
+  }
+
+  const property = await Listing.create({ ...payload, user: user._id });
+  if (!property) {
+    throw new AppError(400, 'Listing not created');
+  }
+  return property;
+};
+
 const getAllListing = async (
   params: any,
   options: IOption,
-  isSubscriptionActive: boolean, // user's subscription status
-  subscriptionSystemActive: boolean // whether subscription system is active
+  isSubscriptionActive: boolean, 
+  subscriptionSystemActive: boolean,
 ) => {
   const { page, limit, skip, sortBy, sortOrder } = pagination(options);
   const { searchTerm, ...filterData } = params;
@@ -135,11 +165,9 @@ const getAllListing = async (
 
   const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
 
-  // Determine projection based on rules
   let projection = {};
   if (subscriptionSystemActive) {
     if (!isSubscriptionActive) {
-      // subscription system is active, but user has no subscription → limited data
       projection = {
         description: 0,
         size: 0,
@@ -152,9 +180,7 @@ const getAllListing = async (
         __v: 0,
       };
     }
-    // if user has active subscription → no projection (show all data)
   } else {
-    // subscription system inactive → show all data
     projection = {};
   }
 
@@ -174,21 +200,28 @@ const getAllListing = async (
 };
 
 
-const getSingleListting = async (id: string, isSubscriptionActive: boolean) => {
+const getSingleListting = async (
+  id: string,
+  isSubscriptionActive: boolean,
+  subscriptionSystemActive: boolean,
+) => {
   let projection = {};
-
-  if (!isSubscriptionActive) {
-    projection = {
-      description: 0,
-      size: 0,
-      areaya: 0,
-      mounth: 0,
-      extaraLocation: 0,
-      createdAt: 0,
-      updatedAt: 0,
-      user: 0,
-      __v: 0,
-    };
+  if (subscriptionSystemActive) {
+    if (!isSubscriptionActive) {
+      projection = {
+        description: 0,
+        size: 0,
+        areaya: 0,
+        mounth: 0,
+        extaraLocation: 0,
+        createdAt: 0,
+        updatedAt: 0,
+        user: 0,
+        __v: 0,
+      };
+    }
+  } else {
+    projection = {};
   }
   const property = await Listing.findById(id)
     .select(projection)

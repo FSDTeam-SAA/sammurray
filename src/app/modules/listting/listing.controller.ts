@@ -5,17 +5,7 @@ import PropertyType from '../propertyType/propertyType.model';
 import Subscription from '../subscription/subscription.model';
 import { listingService } from './listing.service';
 
-const createListting = catchAsync(async (req, res) => {
-  const userId = req.user.id;
 
-  const result = await listingService.createListing(userId, req.body);
-  sendResponse(res, {
-    statusCode: 201,
-    success: true,
-    message: 'Listting created successfully',
-    data: result,
-  });
-});
 
 // const getAllListtings = catchAsync(async (req, res) => {
 //   const filters = pick(req.query, [
@@ -59,8 +49,44 @@ const createListting = catchAsync(async (req, res) => {
 //   });
 // });
 
+// const getSingleListting = catchAsync(async (req, res) => {
+//   const isSubscriptionActive =
+//     req.user?.isSubscription === true &&
+//     req.user?.subscriptionExpiry &&
+//     new Date(req.user.subscriptionExpiry) > new Date();
+//   const id = req.params.id!;
+
+
+//   const result = await listingService.getSingleListting(
+//     id,
+//     isSubscriptionActive,
+
+//   );
+//   sendResponse(res, {
+//     statusCode: 200,
+//     success: true,
+//     message: 'Listting retrieved successfully',
+//     data: result,
+//   });
+// });
+
+
+
+const createListting = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+
+  const result = await listingService.createListing(userId, req.body);
+  sendResponse(res, {
+    statusCode: 201,
+    success: true,
+    message: 'Listting created successfully',
+    data: result,
+  });
+});
+
+
+
 const getAllListtings = catchAsync(async (req, res) => {
-  // Pick filters from query
   const filters = pick(req.query, [
     'searchTerm',
     'type',
@@ -76,7 +102,6 @@ const getAllListtings = catchAsync(async (req, res) => {
 
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
 
-  // Convert type string to ObjectId if exists
   if (filters.type) {
     const typeDoc = await PropertyType.findOne({ name: filters.type });
     if (typeDoc) {
@@ -86,20 +111,19 @@ const getAllListtings = catchAsync(async (req, res) => {
     }
   }
 
-  // Check if user has an active subscription
   const isSubscriptionActive =
     req.user?.isSubscription === true &&
     req.user?.subscriptionExpiry &&
     new Date(req.user.subscriptionExpiry) > new Date();
 
-  // Check if subscription system itself is active
-  const subscriptionSystemActive = (await Subscription.countDocuments({ status: 'active' })) > 0;
+  const subscriptionSystemActive =
+    (await Subscription.countDocuments({ status: 'active' })) > 0;
 
   const result = await listingService.getAllListing(
     filters,
     options,
     isSubscriptionActive,
-    subscriptionSystemActive, // pass the system status to the service
+    subscriptionSystemActive, 
   );
 
   sendResponse(res, {
@@ -111,18 +135,19 @@ const getAllListtings = catchAsync(async (req, res) => {
   });
 });
 
-
-
-
 const getSingleListting = catchAsync(async (req, res) => {
   const isSubscriptionActive =
     req.user?.isSubscription === true &&
     req.user?.subscriptionExpiry &&
     new Date(req.user.subscriptionExpiry) > new Date();
   const id = req.params.id!;
+
+  const subscriptionSystemActive =
+    (await Subscription.countDocuments({ status: 'active' })) > 0;
   const result = await listingService.getSingleListting(
     id,
     isSubscriptionActive,
+    subscriptionSystemActive
   );
   sendResponse(res, {
     statusCode: 200,
@@ -149,8 +174,8 @@ const getAdminAllListtings = catchAsync(async (req, res) => {
   if (filters.type) {
     const typeDoc = await PropertyType.findOne({ name: filters.type });
     if (typeDoc)
-      filters.type = typeDoc._id.toString(); // replace string with ObjectId
-    else delete filters.type; // if not found, ignore filter
+      filters.type = typeDoc._id.toString();
+    else delete filters.type; 
   }
   const result = await listingService.getAdminAllListing(filters, options);
   sendResponse(res, {
@@ -199,7 +224,7 @@ const getAdminWonSingleListting = catchAsync(async (req, res) => {
 const getMyAllListtings = catchAsync(async (req, res) => {
   const filters = pick(req.query, [
     'searchTerm',
-    
+
     'type',
     'address',
     'size',
