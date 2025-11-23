@@ -3,7 +3,68 @@ import pick from '../../helper/pick';
 import catchAsync from '../../utils/catchAsycn';
 import sendResponse from '../../utils/sendResponse';
 import PropertyType from '../propertyType/propertyType.model';
+import Subscription from '../subscription/subscription.model';
 import { propertyService } from './property.service';
+
+// const getAllProperties = catchAsync(async (req, res) => {
+//   const filters = pick(req.query, [
+//     'searchTerm',
+//     'type',
+//     'address',
+//     'size',
+//     'title',
+//     'description',
+//     'country',
+//     'city',
+//     'areaya',
+//     'mounth',
+//   ]);
+
+//   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+//   if (filters.type) {
+//     const typeDoc = await PropertyType.findOne({ name: filters.type });
+//     if (typeDoc)
+//       filters.type = typeDoc._id.toString(); // replace string with ObjectId
+//     else delete filters.type; // if not found, ignore filter
+//   }
+
+//   const isSubscriptionActive =
+//     req.user?.isSubscription === true &&
+//     req.user?.subscriptionExpiry &&
+//     new Date(req.user.subscriptionExpiry) > new Date();
+
+//   const result = await propertyService.getAllProperties(
+//     filters,
+//     options,
+//     isSubscriptionActive,
+//   );
+
+//   sendResponse(res, {
+//     statusCode: 200,
+//     success: true,
+//     message: 'Properties retrieved successfully',
+//     meta: result.meta,
+//     data: result.data,
+//   });
+// });
+
+// const getSingleProperty = catchAsync(async (req, res) => {
+//   const isSubscriptionActive =
+//     req.user?.isSubscription === true &&
+//     req.user?.subscriptionExpiry &&
+//     new Date(req.user.subscriptionExpiry) > new Date();
+//   const id = req.params.id!;
+//   const result = await propertyService.getSingleProperty(
+//     id,
+//     isSubscriptionActive,
+//   );
+//   sendResponse(res, {
+//     statusCode: 200,
+//     success: true,
+//     message: 'Property retrieved successfully',
+//     data: result,
+//   });
+// });
 
 const createProperty = catchAsync(async (req, res) => {
   const userId = req.user.id;
@@ -45,10 +106,14 @@ const getAllProperties = catchAsync(async (req, res) => {
     req.user?.subscriptionExpiry &&
     new Date(req.user.subscriptionExpiry) > new Date();
 
+  const subscriptionSystemActive =
+    (await Subscription.countDocuments({ status: 'active' })) > 0;
+
   const result = await propertyService.getAllProperties(
     filters,
     options,
     isSubscriptionActive,
+    subscriptionSystemActive,
   );
 
   sendResponse(res, {
@@ -66,9 +131,12 @@ const getSingleProperty = catchAsync(async (req, res) => {
     req.user?.subscriptionExpiry &&
     new Date(req.user.subscriptionExpiry) > new Date();
   const id = req.params.id!;
+  const subscriptionSystemActive =
+    (await Subscription.countDocuments({ status: 'active' })) > 0;
   const result = await propertyService.getSingleProperty(
     id,
     isSubscriptionActive,
+    subscriptionSystemActive,
   );
   sendResponse(res, {
     statusCode: 200,
