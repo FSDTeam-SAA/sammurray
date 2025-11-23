@@ -6,9 +6,8 @@ import { authService } from './auth.service';
 const registerUser = catchAsync(async (req, res) => {
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
   const body = req.body.data ? JSON.parse(req.body.data) : req.body;
-  const fileArray = files ? Object.values(files).flat() : undefined;
 
-  const result = await authService.registerUser(body, fileArray);
+  const result = await authService.registerUser(body, files);
 
   sendResponse(res, {
     statusCode: 201,

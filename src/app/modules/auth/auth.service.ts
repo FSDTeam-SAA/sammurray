@@ -14,44 +14,57 @@ import { fileUploader } from '../../helper/fileUploder';
 
 const registerUser = async (
   payload: Partial<IUser>,
-  files?: Express.Multer.File[],
+  files?: { [fieldname: string]: Express.Multer.File[] }
 ) => {
   const exist = await User.findOne({ email: payload.email });
   if (exist) throw new AppError(400, 'User already exists');
 
+  // Random avatar
   const idx = Math.floor(Math.random() * 100);
   payload.profileImage = `https://avatar.iran.liara.run/public/${idx}.png`;
 
+  // Role-specific validation and file upload
   if (payload.role === userRole.SUPPLIER) {
-    if (
-      !payload.agencyName ||
-      !payload.location ||
-      !payload.phone ||
-      !payload.bio
-    ) {
-      throw new AppError(
-        400,
-        'Agency name, location, phone and bio are required for supplier registration',
-      );
+    const requiredFields = ['agencyName', 'location', 'phone', 'bio'];
+    requiredFields.forEach((field) => {
+      if (!payload[field as keyof IUser]) {
+        throw new AppError(
+          400,
+          `Field "${field}" is required for supplier registration`
+        );
+      }
+    });
+
+    if (!files?.licenseImage?.[0] || !files?.logoImage?.[0]) {
+      throw new AppError(400, 'Supplier must upload licenseImage and logoImage');
     }
 
-    if (!files || files.length < 2) {
-      throw new AppError(
-        400,
-        'Supplier must upload licenseImage and logoImage',
-      );
+    const licenseUpload = await fileUploader.uploadToCloudinary(files.licenseImage[0]);
+    const logoUpload = await fileUploader.uploadToCloudinary(files.logoImage[0]);
+
+    payload.licenseImage = licenseUpload.secure_url;
+    payload.logoImage = logoUpload.secure_url;
+  }
+
+  if (payload.role === userRole.AGENT) {
+    const requiredFields = ['location', 'phone', 'website', 'bio'];
+    requiredFields.forEach((field) => {
+      if (!payload[field as keyof IUser]) {
+        throw new AppError(400, `Field "${field}" is required for agent registration`);
+      }
+    });
+
+    if (!files?.agencyLogo?.[0]) {
+      throw new AppError(400, 'Agent must upload agencyLogo');
     }
 
-    const uploadedFiles = await Promise.all(
-      files.map((f) => fileUploader.uploadToCloudinary(f)),
-    );
+    const logoUpload = await fileUploader.uploadToCloudinary(files.agencyLogo[0]);
+    payload.agencyLogo = logoUpload.secure_url;
 
-    if (!uploadedFiles[0]?.secure_url || !uploadedFiles[1]?.secure_url) {
-      throw new AppError(400, 'File upload failed');
+    if (files?.license?.[0]) {
+      const licenseUpload = await fileUploader.uploadToCloudinary(files.license[0]);
+      payload.license = licenseUpload.secure_url;
     }
-
-    payload.licenseImage = uploadedFiles[0].secure_url;
-    payload.logoImage = uploadedFiles[1].secure_url;
   }
 
   const user = await User.create(payload);
@@ -69,6 +82,10 @@ const loginUser = async (payload: Partial<IUser>) => {
     user.password,
   );
   if (!isPasswordMatched) throw new AppError(401, 'Password not matched');
+
+  if (user.role === userRole.AGENT && user.agentApproved === false) {
+    throw new AppError(401, 'Agent is not approved yet');
+  }
 
   const accessToken = jwtHelpers.genaretToken(
     {
@@ -168,20 +185,24 @@ const resetPassword = async (email: string, newPassword: string) => {
 
   // Auto-login after reset
   const accessToken = jwtHelpers.genaretToken(
-    { id: user._id,
+    {
+      id: user._id,
       role: user.role,
       email: user.email,
       isSubscription: user.isSubscription,
-      subscriptionExpiry: user.subscriptionExpiry,},
+      subscriptionExpiry: user.subscriptionExpiry,
+    },
     config.jwt.accessTokenSecret as Secret,
     config.jwt.accessTokenExpires,
   );
   const refreshToken = jwtHelpers.genaretToken(
-    { id: user._id,
+    {
+      id: user._id,
       role: user.role,
       email: user.email,
       isSubscription: user.isSubscription,
-      subscriptionExpiry: user.subscriptionExpiry,},
+      subscriptionExpiry: user.subscriptionExpiry,
+    },
     config.jwt.refreshTokenSecret as Secret,
     config.jwt.refreshTokenExpires,
   );
