@@ -137,7 +137,25 @@ const getAllListing = async (
 
   // Determine projection based on rules
   let projection = {};
-
+  if (subscriptionSystemActive) {
+    if (!isSubscriptionActive) {
+      // subscription system is active, but user has no subscription → limited data
+      projection = {
+        description: 0,
+        size: 0,
+        areaya: 0,
+        mounth: 0,
+        extaraLocation: 0,
+        createdAt: 0,
+        updatedAt: 0,
+        user: 0,
+        __v: 0,
+      };
+    }
+    // if user has active subscription → no projection (show all data)
+  } else {
+    // subscription system inactive → show all data
+    projection = {};
   }
 
   const result = await Listing.find(whereCondition)
@@ -145,7 +163,7 @@ const getAllListing = async (
     .skip(skip)
     .limit(limit)
     .sort({ [sortBy]: sortOrder } as any)
-    .populate('type').populate('user', 'fullName profileImage');
+    .populate('type');
 
   const total = await Listing.countDocuments(whereCondition);
 
