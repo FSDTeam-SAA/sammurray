@@ -18,4 +18,8 @@ export interface IUser {
   stripeAccountId?: string;
   isSubscription?: boolean;
   subscriptionExpiry?: Date;
+  license?: string;
+  agencyLogo?: string;
+  website?: string;
+  agentApproved?: boolean;
 }

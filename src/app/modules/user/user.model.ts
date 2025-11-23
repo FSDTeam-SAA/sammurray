@@ -17,7 +17,12 @@ const userSchema = new mongoose.Schema<IUser & Document>(
     password: { type: String, required: true, select: false },
     role: {
       type: String,
-      enum: [userRole.TENANT, userRole.SUPPLIER, userRole.ADMIN],
+      enum: [
+        userRole.TENANT,
+        userRole.SUPPLIER,
+        userRole.ADMIN,
+        userRole.AGENT,
+      ],
       default: userRole.TENANT,
     },
     profileImage: { type: String },
@@ -33,6 +38,10 @@ const userSchema = new mongoose.Schema<IUser & Document>(
     stripeAccountId: { type: String },
     isSubscription: { type: Boolean, default: false },
     subscriptionExpiry: { type: Date },
+    license: { type: String },
+    agencyLogo: { type: String },
+    website: { type: String },
+    agentApproved: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
