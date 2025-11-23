@@ -6,4 +6,5 @@ export interface ISubscription {
   amount: number;
   type?: 'monthly' | 'yearly';
   user?: Types.ObjectId[];
+  status?: 'active' | 'inactive';
 }

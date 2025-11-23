@@ -22,7 +22,7 @@ const stripeWebhookHandler = async (req: Request, res: Response) => {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  console.log('🔥 EVENT:', event.type);
+  // console.log('🔥 EVENT:', event.type);
 
   try {
     if (event.type === 'checkout.session.completed') {
@@ -40,6 +40,12 @@ const stripeWebhookHandler = async (req: Request, res: Response) => {
 
       const subscription = await Subscription.findById(payment.subscription);
       if (!subscription) return res.json({ received: true });
+
+      // ---- FIX: Save user under subscription.user[] ----
+      if (!subscription?.user?.includes(user._id)) {
+        subscription?.user?.push(user._id);
+        await subscription.save();
+      }
 
       // Add correct expiry
       const monthsToAdd = subscription.type === 'yearly' ? 12 : 1;

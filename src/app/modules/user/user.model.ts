@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema<IUser & Document>(
     verified: { type: Boolean, default: false },
     stripeAccountId: { type: String },
     isSubscription: { type: Boolean, default: false },
-    subscriptionExpiry: { type: Date },
+    subscriptionExpiry: { type: Date, default: null },
     license: { type: String },
     agencyLogo: { type: String },
     website: { type: String },

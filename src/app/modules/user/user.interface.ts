@@ -1,6 +1,8 @@
+import { Types } from 'mongoose';
 import { userRole } from './user.constant';
 
 export interface IUser {
+  _id: Types.ObjectId;
   fullName: string;
   email: string;
   password: string;
@@ -17,7 +19,7 @@ export interface IUser {
   verified?: boolean;
   stripeAccountId?: string;
   isSubscription?: boolean;
-  subscriptionExpiry?: Date;
+  subscriptionExpiry?: Date | null;
   license?: string;
   agencyLogo?: string;
   website?: string;
