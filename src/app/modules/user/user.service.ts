@@ -106,6 +106,30 @@ const profile = async (id: string) => {
   return result;
 };
 
+const approvedAgent = async (id: string) => {
+  const result = await User.findByIdAndUpdate(
+    id,
+    { agentApproved: true },
+    { new: true },
+  );
+  if (!result) {
+    throw new AppError(404, 'User not found');
+  }
+  return result;
+};
+
+const rejectAgent = async (id: string) => {
+  const result = await User.findByIdAndUpdate(
+    id,
+    { agentApproved: false },
+    { new: true },
+  );
+  if (!result) {
+    throw new AppError(404, 'User not found');
+  }
+  return result;
+};
+
 export const userService = {
   createUser,
   getAllUser,
@@ -113,4 +137,6 @@ export const userService = {
   updateUserById,
   deleteUserById,
   profile,
+  approvedAgent,
+  rejectAgent,
 };
