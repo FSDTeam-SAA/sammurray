@@ -1,6 +1,8 @@
 import AppError from '../../error/appError';
 import { fileUploader } from '../../helper/fileUploder';
 import pagination, { IOption } from '../../helper/pagenation';
+import HireAgent from '../hireAgent/hireAgent.model';
+import { userRole } from './user.constant';
 
 import { IUser } from './user.interface';
 import User from './user.model';
@@ -108,6 +110,16 @@ const profile = async (id: string) => {
   const result = await User.findById(id);
   if (!result) {
     throw new AppError(404, 'User not found');
+  }
+  if (result.role === userRole.SUPPLIER) {
+    const agent = await HireAgent.find({ supplierId: id }).populate('agentId');
+    return { result, agent };
+  }
+  if (result.role === userRole.AGENT) {
+    const supplier = await HireAgent.find({ agentId: id }).populate(
+      'supplierId',
+    );
+    return { result, supplier };
   }
   return result;
 };
