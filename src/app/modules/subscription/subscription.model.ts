@@ -17,7 +17,12 @@ const subscriptionSchema = new mongoose.Schema<ISubscription>(
     type: {
       type: String,
       enum: ['monthly', 'yearly'],
-      required: true,
+      default: 'monthly',
+    },
+    status: {
+      type: String,
+      enum: ['active', 'inactive'],
+      default: 'active',
     },
     user: [
       {

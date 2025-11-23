@@ -149,6 +149,32 @@ const paySubscription = async (userId: string, subscriptionId: string) => {
   return { url: session.url, sessionId: session.id };
 };
 
+const updateSubscriptionStatus = async (subscriptionId: string) => {
+  const subscription = await Subscription.findById(subscriptionId);
+  if (!subscription) throw new AppError(404, 'Subscription not found');
+
+  const newStatus = subscription.status === 'active' ? 'inactive' : 'active';
+
+  // Update subscription
+  const updatedSubscription = await Subscription.findByIdAndUpdate(
+    subscriptionId,
+    { status: newStatus },
+    { new: true }
+  );
+
+  // If subscription has users → update them
+  if (Array.isArray(subscription.user) && subscription.user.length > 0) {
+    await User.updateMany(
+      { _id: { $in: subscription.user } },
+      { isSubscription: newStatus === 'active' }
+    );
+  }
+
+  return updatedSubscription;
+};
+
+
+
 export const subscriptionService = {
   createSubscription,
   getAllSubscription,
@@ -156,4 +182,5 @@ export const subscriptionService = {
   updateSubscription,
   deleteSubscription,
   paySubscription,
+  updateSubscriptionStatus,
 };
