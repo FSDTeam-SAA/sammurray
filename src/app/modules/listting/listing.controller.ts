@@ -2,6 +2,7 @@ import pick from '../../helper/pick';
 import catchAsync from '../../utils/catchAsycn';
 import sendResponse from '../../utils/sendResponse';
 import PropertyType from '../propertyType/propertyType.model';
+import Subscription from '../subscription/subscription.model';
 import { listingService } from './listing.service';
 
 const createListting = catchAsync(async (req, res) => {
@@ -16,7 +17,50 @@ const createListting = catchAsync(async (req, res) => {
   });
 });
 
+// const getAllListtings = catchAsync(async (req, res) => {
+//   const filters = pick(req.query, [
+//     'searchTerm',
+//     'type',
+//     'address',
+//     'size',
+//     'title',
+//     'description',
+//     'country',
+//     'city',
+//     'areaya',
+//     'mounth',
+//   ]);
+
+//   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+//   if (filters.type) {
+//     const typeDoc = await PropertyType.findOne({ name: filters.type });
+//     if (typeDoc)
+//       filters.type = typeDoc._id.toString(); // replace string with ObjectId
+//     else delete filters.type; // if not found, ignore filter
+//   }
+
+//   const isSubscriptionActive =
+//     req.user?.isSubscription === true &&
+//     req.user?.subscriptionExpiry &&
+//     new Date(req.user.subscriptionExpiry) > new Date();
+
+//   const result = await listingService.getAllListing(
+//     filters,
+//     options,
+//     isSubscriptionActive,
+//   );
+
+//   sendResponse(res, {
+//     statusCode: 200,
+//     success: true,
+//     message: 'Listtings retrieved successfully',
+//     meta: result.meta,
+//     data: result.data,
+//   });
+// });
+
 const getAllListtings = catchAsync(async (req, res) => {
+  // Pick filters from query
   const filters = pick(req.query, [
     'searchTerm',
     'type',
@@ -31,28 +75,38 @@ const getAllListtings = catchAsync(async (req, res) => {
   ]);
 
   const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+
+  // Convert type string to ObjectId if exists
   if (filters.type) {
     const typeDoc = await PropertyType.findOne({ name: filters.type });
-    if (typeDoc)
-      filters.type = typeDoc._id.toString(); // replace string with ObjectId
-    else delete filters.type; // if not found, ignore filter
+    if (typeDoc) {
+      filters.type = typeDoc._id.toString();
+    } else {
+      delete filters.type;
+    }
   }
 
+  // Check if user has an active subscription
   const isSubscriptionActive =
     req.user?.isSubscription === true &&
     req.user?.subscriptionExpiry &&
     new Date(req.user.subscriptionExpiry) > new Date();
 
+  // Check if subscription system itself is active
+  const subscriptionSystemActive =
+    (await Subscription.countDocuments({ status: 'active' })) > 0;
+
   const result = await listingService.getAllListing(
     filters,
     options,
     isSubscriptionActive,
+    subscriptionSystemActive, // pass the system status to the service
   );
 
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: 'Listtings retrieved successfully',
+    message: 'Listings retrieved successfully',
     meta: result.meta,
     data: result.data,
   });

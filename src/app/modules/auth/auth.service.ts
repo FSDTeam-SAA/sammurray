@@ -11,10 +11,11 @@ import bcrypt from 'bcryptjs';
 import createOtpTemplate from '../../utils/createOtpTemplate';
 import { userRole } from '../user/user.constant';
 import { fileUploader } from '../../helper/fileUploder';
+import Subscription from '../subscription/subscription.model';
 
 const registerUser = async (
   payload: Partial<IUser>,
-  files?: { [fieldname: string]: Express.Multer.File[] }
+  files?: { [fieldname: string]: Express.Multer.File[] },
 ) => {
   const exist = await User.findOne({ email: payload.email });
   if (exist) throw new AppError(400, 'User already exists');
@@ -30,17 +31,24 @@ const registerUser = async (
       if (!payload[field as keyof IUser]) {
         throw new AppError(
           400,
-          `Field "${field}" is required for supplier registration`
+          `Field "${field}" is required for supplier registration`,
         );
       }
     });
 
     if (!files?.licenseImage?.[0] || !files?.logoImage?.[0]) {
-      throw new AppError(400, 'Supplier must upload licenseImage and logoImage');
+      throw new AppError(
+        400,
+        'Supplier must upload licenseImage and logoImage',
+      );
     }
 
-    const licenseUpload = await fileUploader.uploadToCloudinary(files.licenseImage[0]);
-    const logoUpload = await fileUploader.uploadToCloudinary(files.logoImage[0]);
+    const licenseUpload = await fileUploader.uploadToCloudinary(
+      files.licenseImage[0],
+    );
+    const logoUpload = await fileUploader.uploadToCloudinary(
+      files.logoImage[0],
+    );
 
     payload.licenseImage = licenseUpload.secure_url;
     payload.logoImage = logoUpload.secure_url;
@@ -50,7 +58,10 @@ const registerUser = async (
     const requiredFields = ['location', 'phone', 'website', 'bio'];
     requiredFields.forEach((field) => {
       if (!payload[field as keyof IUser]) {
-        throw new AppError(400, `Field "${field}" is required for agent registration`);
+        throw new AppError(
+          400,
+          `Field "${field}" is required for agent registration`,
+        );
       }
     });
 
@@ -58,11 +69,15 @@ const registerUser = async (
       throw new AppError(400, 'Agent must upload agencyLogo');
     }
 
-    const logoUpload = await fileUploader.uploadToCloudinary(files.agencyLogo[0]);
+    const logoUpload = await fileUploader.uploadToCloudinary(
+      files.agencyLogo[0],
+    );
     payload.agencyLogo = logoUpload.secure_url;
 
     if (files?.license?.[0]) {
-      const licenseUpload = await fileUploader.uploadToCloudinary(files.license[0]);
+      const licenseUpload = await fileUploader.uploadToCloudinary(
+        files.license[0],
+      );
       payload.license = licenseUpload.secure_url;
     }
   }
