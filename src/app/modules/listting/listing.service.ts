@@ -4,8 +4,6 @@ import User from '../user/user.model';
 import { IListing } from './listing.interface';
 import Listing from './listing.model';
 
-
-
 // const getAllListing = async (
 //   params: any,
 //   options: IOption,
@@ -78,7 +76,6 @@ import Listing from './listing.model';
 //   };
 // };
 
-
 // const getSingleListting = async (id: string, isSubscriptionActive: boolean) => {
 //   let projection = {};
 
@@ -105,9 +102,6 @@ import Listing from './listing.model';
 //   return property;
 // };
 
-
-
-
 const createListing = async (userId: string, payload: IListing) => {
   const user = await User.findById(userId);
   if (!user) {
@@ -124,7 +118,7 @@ const createListing = async (userId: string, payload: IListing) => {
 const getAllListing = async (
   params: any,
   options: IOption,
-  isSubscriptionActive: boolean, 
+  isSubscriptionActive: boolean,
   subscriptionSystemActive: boolean,
 ) => {
   const { page, limit, skip, sortBy, sortOrder } = pagination(options);
@@ -176,7 +170,7 @@ const getAllListing = async (
         extaraLocation: 0,
         createdAt: 0,
         updatedAt: 0,
-        user: 0,
+        // user: 0,
         __v: 0,
       };
     }
@@ -189,7 +183,8 @@ const getAllListing = async (
     .skip(skip)
     .limit(limit)
     .sort({ [sortBy]: sortOrder } as any)
-    .populate('type');
+    .populate('type')
+    .populate('user');
 
   const total = await Listing.countDocuments(whereCondition);
 
@@ -198,7 +193,6 @@ const getAllListing = async (
     meta: { total, page, limit },
   };
 };
-
 
 const getSingleListting = async (
   id: string,
@@ -216,7 +210,7 @@ const getSingleListting = async (
         extaraLocation: 0,
         createdAt: 0,
         updatedAt: 0,
-        user: 0,
+        // user: 0,
         __v: 0,
       };
     }
