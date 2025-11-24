@@ -24,4 +24,5 @@ export interface IUser {
   agencyLogo?: string;
   website?: string;
   agentApproved?: boolean;
+  activeInactiveSubcrib?: string;
 }
