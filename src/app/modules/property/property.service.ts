@@ -109,7 +109,7 @@ const createProperty = async (
   userId: string,
   payload: IProperty,
   file?: Express.Multer.File,
-  supplyerId?: string,
+  supplyerIdCreateIdAgent?: string,
 ) => {
   const user = await User.findById(userId);
   if (!user) {
@@ -127,8 +127,8 @@ const createProperty = async (
   if (user.role === userRole.AGENT) {
     const property = await Property.create({
       ...payload,
-      user: user._id,
-      supplyerId: payload.supplyerId,
+      user: payload.supplyerIdCreateIdAgent,
+      supplyerIdCreateIdAgent: user._id,
       managedByThisAgency: payload.managedByThisAgency,
     });
     if (!property) {
