@@ -4,6 +4,12 @@ import { userRole } from '../user/user.constant';
 import { hireAgentController } from './hireAgent.controller';
 const router = express.Router();
 
+router.get(
+  '/supplier',
+  auth(userRole.AGENT),
+  hireAgentController.getAllHirAgentSupplier,
+);
+
 router.post('/', auth(userRole.SUPPLIER), hireAgentController.createHireAgent);
 router.get('/', auth(userRole.SUPPLIER), hireAgentController.getAllHireAgent);
 router.get(

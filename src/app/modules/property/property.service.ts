@@ -2,6 +2,7 @@ import AppError from '../../error/appError';
 import { fileUploader } from '../../helper/fileUploder';
 import pagination, { IOption } from '../../helper/pagenation';
 import PropertyType from '../propertyType/propertyType.model';
+import { userRole } from '../user/user.constant';
 import User from '../user/user.model';
 import { IProperty } from './property.interface';
 import Property from './property.model';
@@ -108,6 +109,7 @@ const createProperty = async (
   userId: string,
   payload: IProperty,
   file?: Express.Multer.File,
+  supplyerId?: string,
 ) => {
   const user = await User.findById(userId);
   if (!user) {
@@ -120,6 +122,19 @@ const createProperty = async (
   if (file) {
     const propertyImage = await fileUploader.uploadToCloudinary(file);
     payload.thumble = propertyImage.secure_url;
+  }
+
+  if (user.role === userRole.AGENT) {
+    const property = await Property.create({
+      ...payload,
+      user: user._id,
+      supplyerId: payload.supplyerId,
+      managedByThisAgency: payload.managedByThisAgency,
+    });
+    if (!property) {
+      throw new AppError(400, 'Property not created');
+    }
+    return property;
   }
 
   const property = await Property.create({ ...payload, user: user._id });

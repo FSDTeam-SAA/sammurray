@@ -68,10 +68,33 @@ const deleteHireAgent = catchAsync(async (req, res) => {
   });
 });
 
+const getAllHirAgentSupplier = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const filters = pick(req.query, [
+    'searchTerm',
+    'agentId.fullName',
+    'supplierId.email',
+  ]);
+  const options = pick(req.query, ['limit', 'page', 'sortBy', 'sortOrder']);
+  const result = await hireAgentService.getAllHirAgentSupplier(
+    userId,
+    filters,
+    options,
+  );
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Hire agents retrieved successfully',
+    meta: result.meta,
+    data: result.data,
+  });
+});
+
 export const hireAgentController = {
   createHireAgent,
   getAllHireAgent,
   getSingleHireAgent,
   updateHireAgent,
   deleteHireAgent,
+  getAllHirAgentSupplier,
 };
