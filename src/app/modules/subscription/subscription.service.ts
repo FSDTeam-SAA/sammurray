@@ -159,21 +159,26 @@ const updateSubscriptionStatus = async (subscriptionId: string) => {
   const updatedSubscription = await Subscription.findByIdAndUpdate(
     subscriptionId,
     { status: newStatus },
-    { new: true }
+    { new: true },
   );
 
   // If subscription has users → update them
   if (Array.isArray(subscription.user) && subscription.user.length > 0) {
     await User.updateMany(
       { _id: { $in: subscription.user } },
-      { isSubscription: newStatus === 'active' }
+      { isSubscription: newStatus === 'active' },
     );
   }
 
+  await User.updateMany(
+    {},
+    {
+      activeInactiveSubcrib: newStatus,
+    },
+  );
+
   return updatedSubscription;
 };
-
-
 
 export const subscriptionService = {
   createSubscription,

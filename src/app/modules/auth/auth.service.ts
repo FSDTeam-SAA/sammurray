@@ -89,8 +89,6 @@ const registerUser = async (
 const loginUser = async (payload: Partial<IUser>) => {
   const user = await User.findOne({ email: payload.email }).select('+password');
 
-  
-
   if (!user) throw new AppError(401, 'User not found');
   if (!payload.password) throw new AppError(400, 'Password is required');
 
@@ -103,6 +101,12 @@ const loginUser = async (payload: Partial<IUser>) => {
   if (user.role === userRole.AGENT && user.agentApproved === false) {
     throw new AppError(401, 'Agent is not approved yet');
   }
+  // const subscription = await Subscription.findOne({ status: 'active' });
+
+  // const activeInactiveSubcrib = subscription ? 'active' : 'inactive';
+
+  // user.activeInactiveSubcrib = activeInactiveSubcrib;
+  // await user.save();
 
   const accessToken = jwtHelpers.genaretToken(
     {
@@ -111,6 +115,7 @@ const loginUser = async (payload: Partial<IUser>) => {
       email: user.email,
       isSubscription: user.isSubscription,
       subscriptionExpiry: user.subscriptionExpiry,
+      activeInactiveSubcrib: user.activeInactiveSubcrib,
     },
     config.jwt.accessTokenSecret as Secret,
     config.jwt.accessTokenExpires,
@@ -123,6 +128,7 @@ const loginUser = async (payload: Partial<IUser>) => {
       email: user.email,
       isSubscription: user.isSubscription,
       subscriptionExpiry: user.subscriptionExpiry,
+      activeInactiveSubcrib: user.activeInactiveSubcrib,
     },
     config.jwt.refreshTokenSecret as Secret,
     config.jwt.refreshTokenExpires,
@@ -148,6 +154,7 @@ const refreshToken = async (token: string) => {
       email: user.email,
       isSubscription: user.isSubscription,
       subscriptionExpiry: user.subscriptionExpiry,
+      activeInactiveSubcrib: user.activeInactiveSubcrib,
     },
     config.jwt.accessTokenSecret as Secret,
     config.jwt.accessTokenExpires,
@@ -208,6 +215,7 @@ const resetPassword = async (email: string, newPassword: string) => {
       email: user.email,
       isSubscription: user.isSubscription,
       subscriptionExpiry: user.subscriptionExpiry,
+      activeInactiveSubcrib: user.activeInactiveSubcrib,
     },
     config.jwt.accessTokenSecret as Secret,
     config.jwt.accessTokenExpires,
@@ -219,6 +227,7 @@ const resetPassword = async (email: string, newPassword: string) => {
       email: user.email,
       isSubscription: user.isSubscription,
       subscriptionExpiry: user.subscriptionExpiry,
+      activeInactiveSubcrib: user.activeInactiveSubcrib,
     },
     config.jwt.refreshTokenSecret as Secret,
     config.jwt.refreshTokenExpires,

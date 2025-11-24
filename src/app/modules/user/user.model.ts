@@ -42,6 +42,7 @@ const userSchema = new mongoose.Schema<IUser & Document>(
     agencyLogo: { type: String },
     website: { type: String },
     agentApproved: { type: Boolean, default: false },
+    activeInactiveSubcrib: { type: String },
   },
   { timestamps: true },
 );
