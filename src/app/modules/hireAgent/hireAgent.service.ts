@@ -93,10 +93,70 @@ const deleteHireAgentById = async (id: string) => {
   return result;
 };
 
+const getAllHirAgentSupplier = async (
+  userId: string,
+  params: any,
+  options: IOption,
+) => {
+  const user = await User.findById(userId);
+  if (!user) throw new AppError(404, 'User not found');
+  if (user.role !== 'AGENT') throw new AppError(400, 'You are not an agent');
+
+  const { page, limit, skip, sortBy, sortOrder } = pagination(options);
+  const { searchTerm, ...filterData } = params;
+
+  const andCondition: any[] = [];
+  const userSearchableFields = ['agentId.fullName', 'supplierId.email'];
+
+  andCondition.push({ agentId: user._id });
+
+  if (searchTerm) {
+    andCondition.push({
+      $or: userSearchableFields.map((field) => ({
+        [field]: { $regex: searchTerm, $options: 'i' },
+      })),
+    });
+  }
+
+  if (Object.keys(filterData).length) {
+    andCondition.push({
+      $and: Object.entries(filterData).map(([field, value]) => ({
+        [field]: value,
+      })),
+    });
+  }
+
+  const whereCondition = andCondition.length > 0 ? { $and: andCondition } : {};
+
+  const result = await HireAgent.find(whereCondition)
+    .skip(skip)
+    .limit(limit)
+    .sort({ [sortBy]: sortOrder } as any)
+    .select('supplierId');
+  // .populate('supplierId')
+  // .populate('agentId');
+
+  if (!result) {
+    throw new AppError(404, 'Hire agents not found');
+  }
+
+  const total = await HireAgent.countDocuments(whereCondition);
+
+  return {
+    data: result,
+    meta: {
+      total,
+      page,
+      limit,
+    },
+  };
+};
+
 export const hireAgentService = {
   createHireAgent,
   getAllHirAgent,
   getHireAgentById,
   updateHireAgentById,
   deleteHireAgentById,
+  getAllHirAgentSupplier,
 };

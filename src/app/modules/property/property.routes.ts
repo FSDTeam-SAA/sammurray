@@ -12,7 +12,7 @@ router.get('/nearby', optionalAuth, propertyController.getNearbyProperties);
 // create property
 router.post(
   '/',
-  auth(userRole.ADMIN, userRole.SUPPLIER),
+  auth(userRole.ADMIN, userRole.SUPPLIER, userRole.AGENT),
   fileUploader.upload.single('thumble'),
   propertyController.createProperty,
 );

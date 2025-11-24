@@ -18,4 +18,6 @@ export interface IProperty {
     coordinates: [number, number]; // [longitude, latitude]
   };
   bookingUser?: Types.ObjectId[];
+  supplyerId?: Types.ObjectId;
+  managedByThisAgency?: boolean;
 }

@@ -24,6 +24,8 @@ const porertySchema = new mongoose.Schema<IProperty>(
       coordinates: { type: [Number], required: true }, // [lng, lat]
     },
     bookingUser: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    supplyerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    managedByThisAgency: { type: Boolean, default: false },
   },
   { timestamps: true },
 );
