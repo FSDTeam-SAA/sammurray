@@ -3,4 +3,5 @@ export const userRole = {
   SUPPLIER: 'SUPPLIER',
   ADMIN: 'ADMIN',
   AGENT: 'AGENT',
+  SUPERVISOR: 'SUPERVISOR',
 } as const;
