@@ -132,8 +132,8 @@ const getAllHirAgentSupplier = async (
     .skip(skip)
     .limit(limit)
     .sort({ [sortBy]: sortOrder } as any)
-    .select('supplierId');
-  // .populate('supplierId')
+    .select('supplierId')
+  .populate('supplierId')
   // .populate('agentId');
 
   if (!result) {
