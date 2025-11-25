@@ -210,7 +210,8 @@ const getAllProperties = async (
     .skip(skip)
     .limit(limit)
     .sort({ [sortBy]: sortOrder } as any)
-    .populate('type');
+    .populate('type')
+    .populate('supplyerIdCreateIdAgent');
 
   const total = await Property.countDocuments(whereCondition);
 
