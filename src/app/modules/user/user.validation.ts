@@ -2,7 +2,7 @@ import z from 'zod';
 import { userRole } from './user.constant';
 
 // Use the imported constant to avoid duplication & fix "unused" error
-const roleEnum = [userRole.TENANT, userRole.SUPERVISOR, userRole.ADMIN] as const;
+const roleEnum = [userRole.TENANT, userRole.SUPPLIER, userRole.ADMIN] as const;
 
 /* -------------------------------- Zod Schema -------------------------------- */
 export const zUserSchema = z.object({
